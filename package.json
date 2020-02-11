@@ -1,0 +1,22 @@
+{
+  "name": "clav-migrator",
+  "version": "1.0.0",
+  "description": "Migrador de Dados",
+  "main": "excel2csv.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mrd1996/clav-migrator.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/mrd1996/clav-migrator/issues"
+  },
+  "homepage": "https://github.com/mrd1996/clav-migrator#readme",
+  "dependencies": {
+    "xlsx": "^0.15.5"
+  }
+}
