@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 /* eslint-disable import/extensions */
 import xlsx from "xlsx";
+import fs from "fs";
 import Migrator from "./migrator.js";
 import entParser from "./parsers/entParser.js";
 import entTemp from "./template/entTemp.js";
@@ -13,4 +14,5 @@ const entTtl = Migrator.read(sheet)
   .parse(entParser)
   .convert(entTemp);
 
+fs.writeFileSync("data/ent.ttl", entTtl);
 console.log(entTtl);
