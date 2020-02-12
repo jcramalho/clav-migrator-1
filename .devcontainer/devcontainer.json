@@ -1,17 +1,19 @@
 {
-	"name": "Node.js & Mongo DB",
-	"dockerComposeFile": "docker-compose.yml",
-	"service": "web",
-	"workspaceFolder": "/workspace",
-	"settings": {
-		"terminal.integrated.shell.linux": "/bin/bash",
-		"editor.formatOnSave": true,
-		"editor.codeActionsOnSave": {
-			"source.fixAll.eslint": true
-		}
-	},
-	"extensions": [
-		"dbaeumer.vscode-eslint",
-		"esbenp.prettier-vscode"
-	]
+  "name": "Node.js & Mongo DB",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "web",
+  "workspaceFolder": "/workspace",
+  "settings": {
+    "terminal.integrated.shell.linux": "/bin/bash",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": true
+    }
+  },
+  "extensions": [
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "christian-kohler.path-intellisense"
+  ],
+  "postCreateCommand": "npm install"
 }
