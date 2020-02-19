@@ -19,6 +19,7 @@
   },
   "homepage": "https://github.com/mrd1996/clav-migrator#readme",
   "dependencies": {
+    "nanoid": "^2.1.11",
     "xlsx": "^0.15.5"
   },
   "devDependencies": {

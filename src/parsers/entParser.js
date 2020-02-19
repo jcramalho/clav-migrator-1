@@ -8,7 +8,7 @@ export default function entParser(data) {
   return {
     ...data,
     sigla: data.Sigla.replace(/\.|,/gm, "_").replace(/ /gm, "_"),
-    estado: !data.Estado || data.Estado === "Ativo" ? "Ativa" : "Inativa",
+    estado: !data.Estado || data.Estado === "Ativo" ? "A" : "I",
     international: !data.International ? "" : data.International,
     entTipo: getEntTipo(data["Tipologia de Entidade"])
   };

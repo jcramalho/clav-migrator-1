@@ -1,6 +1,6 @@
 export default function entTemp(data) {
   let ttl = "";
-  ttl += data.reduce((prev, ent) => {
+  ttl += data.entidade.reduce((prev, ent) => {
     let temp = `${prev}###  http://jcr.di.uminho.pt/m51-clav#ent_${ent.sigla}\n`;
     temp += `:ent_${ent.sigla} rdf:type owl:NamedIndividual ,\n \t\t:Entidade ;\n`;
     temp += `\t:entEstado "${ent.estado}";\n`;
