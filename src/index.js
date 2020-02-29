@@ -11,6 +11,8 @@ import tipoParser from "./parsers/tipoParser.js";
 import tipoTemp from "./template/tipoTemp.js";
 import legParser from "./parsers/legParser.js";
 import legTemp from "./template/legTemp.js";
+import classParser from "./parsers/classParser.js";
+import classTemp from "./template/classTemp.js";
 
 // FIXME: Remove later
 const workbook = xlsx.readFile("./data/Frecolha-20200204.xls", {
@@ -22,6 +24,8 @@ const sheet = workbook.Sheets["ent.sioe.csv"];
 const sheetTi = workbook.Sheets["ti.csv"];
 const sheetTipo = workbook.Sheets["tip_ent.csv"];
 const sheetLeg = workbook.Sheets["leg.csv"];
+// TODO: Parse all class sheets
+const sheetClass = workbook.Sheets["100.csv"];
 
 const entTtl = Migrator.read(sheet, "entidade")
   .parse(entParser, "entidade")
@@ -39,9 +43,14 @@ const legTtl = Migrator.read(sheetLeg, "legislacao")
   .parse(legParser, "legislacao")
   .convert(legTemp);
 
+const classTtl = Migrator.read(sheetClass, "c100")
+  .parse(classParser, "c100")
+  .convert(classTemp);
+
 fs.writeFileSync("data/ent.ttl", entTtl);
 fs.writeFileSync("data/ti.ttl", tiTtl);
 fs.writeFileSync("data/tipo.ttl", tipoTtl);
 fs.writeFileSync("data/leg.ttl", legTtl);
+fs.writeFileSync("data/c100.ttl", classTtl);
 
-console.log(legTtl);
+// console.log(classTtl);
