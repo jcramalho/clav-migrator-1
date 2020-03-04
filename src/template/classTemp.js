@@ -161,6 +161,51 @@ export default function classTemp(data) {
 
     temp += `\t:descricao "${classe.descricao}".\n`;
 
+    // MigraNA
+    classe.naList.pop();
+
+    temp += classe.naList.reduce((prevNa, na) => {
+      let out = `${prevNa}###  http://jcr.di.uminho.pt/m51-clav#${na.id}\n`;
+      out += `:${na.id} rdf:type owl:NamedIndividual ,\n`;
+      out += "\t\t:NotaAplicacao ;\n";
+      out += '\t:rdfs:label "Nota de Aplicação";\n';
+      out += `\t:conteudo "${na.conteudo}".\n\n`;
+      // criar as relações com das notas de aplicação com a classe
+      out += `:${classe.classCod} :temNotaAplicacao :${na.id} .\n`;
+      return out;
+    }, "");
+
+    // MigraExNA
+
+    classe.exNaList.pop();
+
+    temp += classe.exNaList.reduce((prevExNa, exNa) => {
+      let out = `${prevExNa}###  http://jcr.di.uminho.pt/m51-clav#${exNa.id}\n`;
+      out += `:${exNa.id} rdf:type owl:NamedIndividual ,\n`;
+      out += "\t:ExemploNotaAplicacao ;\n";
+      out += '\t:rdfs:label "Exemplo de nota de aplicação";\n';
+      out += `\t:conteudo "${exNa.conteudo}".\n\n`;
+      // criar as relações com dos exemplos das notas de aplicação com a classe
+      out += `:${classe.classCod} :temExemploNA :${exNa.id} .\n`;
+      return out;
+    }, "");
+
+    // MigraNE
+
+    classe.neList.pop();
+
+    temp += classe.neList.reduce((prevNe, ne) => {
+      let out = `${prevNe}###  http://jcr.di.uminho.pt/m51-clav#${ne.id}\n`;
+      out += `:${ne.id} rdf:type owl:NamedIndividual ,\n`;
+      out += "\t:NotaExclusao ;\n";
+      out += '\t:rdfs:label "Nota de Exclusão";\n';
+      out += `\t:conteudo "${ne.conteudo}".\n\n`;
+      // criar as relações com das notas de exclusão com a classe
+      out += `:${classe.classCod} :temNotaExclusao :${ne.id} .\n`;
+
+      return out;
+    }, "");
+
     return temp;
   }, "");
   return ttl;
