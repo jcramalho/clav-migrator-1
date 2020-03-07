@@ -1,22 +1,14 @@
+/* eslint-disable import/extensions */
 import nanoid from "nanoid";
-
-function getEstado(estado) {
-  if (estado === undefined || estado.trim() === "") return "A";
-  if (/[hH][aA][rR][mM][oO][nN]/.test(estado)) return "H";
-  if (/[iI][nN][Aa][tT][iI][vV]/.test(estado)) return "I";
-  return false;
-}
-
-function getClasse(cod) {
-  const digArray = cod.split(".");
-
-  if (digArray.length > 4) return false;
-  return digArray;
-}
+import { getClasse, getEstado } from "../helper.js";
 
 export default function classParser(data) {
-  const codigo = data["Código"].toString().replace(/(\r\n|\n|\r)/gm, "");
-  const titulo = data["Título"].replace(/(\r\n|\n|\r)/gm, "");
+  const codigo = data["Código"]
+    ? data["Código"].toString().replace(/(\r\n|\n|\r)/gm, "")
+    : "";
+  const titulo = data["Título"]
+    ? data["Título"].replace(/(\r\n|\n|\r)/gm, "")
+    : "";
   // MigraNA
   const naText = data["Notas de aplicação"]
     ? data["Notas de aplicação"]
@@ -61,26 +53,24 @@ export default function classParser(data) {
     classe: getClasse(codigo),
     classCod: `c${codigo}`,
     titulo,
-    tipoProc: data["Tipo de Processo"]
-      ? data["Tipo de Processo"].trim()
-      : false,
+    tipoProc: data["Tipo de Processo"] ? data["Tipo de Processo"].trim() : "",
     parts: data["Participante no processo"]
       ? data["Participante no processo"]
           .replace(/(\r\n|\n|\r)/gm, "")
           .replace(/\.| |,/gm, "_")
           .split("#")
-      : false,
+      : [],
     tiposInt: data["Tipo de intervenção do participante"]
       ? data["Tipo de intervenção do participante"]
           .replace(/(\r\n|\n|\r| )/gm, "")
           .split("#")
-      : false,
+      : [],
     donosProc: data["Dono do processo"]
       ? data["Dono do processo"]
           .replace(/(\r\n|\n|\r)/gm, "")
           .replace(/\.| |,/gm, "_")
           .split("#")
-      : false,
+      : [],
     codProcRel: data["Código do processo relacionado"]
       ? data["Código do processo relacionado"]
           .replace(/(\r\n|\n|\r|\s)/gm, "")
@@ -98,13 +88,13 @@ export default function classParser(data) {
       : [],
     unifProc: data["Uniformização do processo"]
       ? data["Uniformização do processo"].trim().replace(/(\r\n|\n|\r)/gm, "")
-      : false,
+      : "",
     dimQual: data["Dimensão qualitativa do processo"]
       ? data["Dimensão qualitativa do processo"].trim()
-      : false,
+      : "",
     descricao: data["Descrição"]
-      .replace(/"/gm, '\\"')
-      .replace(/(\r\n|\n|\r)/gm, ""),
+      ? data["Descrição"].replace(/"/gm, '\\"').replace(/(\r\n|\n|\r)/gm, "")
+      : "",
     // MigraNA
     naList,
     // MigraExNa

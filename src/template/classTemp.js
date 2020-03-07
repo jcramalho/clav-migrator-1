@@ -1,7 +1,9 @@
+// import { proc_c400_10_001 } from "../helper";
+
 /* eslint-disable no-nested-ternary */
-export default function classTemp(data) {
+export default code => data => {
   let ttl = "";
-  ttl += data.c100.reduce((prev, classe) => {
+  ttl += data[code].reduce((prev, classe) => {
     let temp = `${prev}###  http://jcr.di.uminho.pt/m51-clav#${classe.classCod}\n`;
     temp += `:${classe.classCod} rdf:type owl:NamedIndividual ;\n`;
     temp += `\t:classeStatus "${classe.estado}";\n`;
@@ -209,4 +211,4 @@ export default function classTemp(data) {
     return temp;
   }, "");
   return ttl;
-}
+};
