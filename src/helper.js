@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 export function getEstado(estado) {
   if (estado === undefined || estado.trim() === "") return "A";
   if (/[hH][aA][rR][mM][oO][nN]/.test(estado)) return "H";

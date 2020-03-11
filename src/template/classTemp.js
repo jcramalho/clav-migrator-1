@@ -1,3 +1,9 @@
+/* eslint-disable no-use-before-define */
+/* eslint-disable import/extensions */
+/* eslint-disable camelcase */
+/* eslint-disable no-param-reassign */
+import { proc_c400_10_001 } from "../helper.js";
+
 // import { proc_c400_10_001 } from "../helper";
 
 /* eslint-disable no-nested-ternary */
@@ -208,7 +214,128 @@ export default code => data => {
       return out;
     }, "");
 
+    if (!Array.isArray(data.classesLvl3)) {
+      data.classesLvl3 = [];
+    }
+
+    if (classe.codigo === "400.10.001") {
+      temp += proc_c400_10_001(classe);
+    } else if (classe.classe.length === 3) {
+      if (classe["Prazo de conservação administrativa"]) {
+        temp += procPCA(classe, classe.pcaCode, classe.codigo);
+      } else {
+        // Registar a classe para tratar o nível 4
+        data.classesLvl3.push(classe.codigo);
+      }
+    } else if (classe.classe.length === 4) {
+      const sep = classe.codigo.lastIndexOf(".");
+      const pai = classe.codigo.slice(0, sep);
+      const index = data.classesLvl3.indexOf(pai);
+      if (index > -1) {
+        if (classe["Prazo de conservação administrativa"]) {
+          temp += procPCA(classe, classe.pcaCode, classe.codigo);
+        }
+        /*
+        else if(jsonObj['Nota ao PCA']){
+          console.error('WARN: PCA descrito em nota: ' + cod)
+        }
+        */
+      }
+    }
+
+    if (!Array.isArray(data.indClasses)) {
+      data.indClasses = [];
+    }
+    data.indClasses.push(classe.codigo);
+
     return temp;
   }, "");
   return ttl;
 };
+
+// Migração do PCA_____________________________________________________________
+
+function procPCA(data, pcaCode, cod) {
+  let myTriples = `###  http://jcr.di.uminho.pt/m51-clav#${pcaCode}\n`;
+  myTriples += `:${pcaCode} rdf:type owl:NamedIndividual ,\n`;
+  myTriples += "\t:PCA .\n";
+
+  const regex = RegExp("[]*[0-9]+[]*");
+  if (regex.test(data["Prazo de conservação administrativa"])) {
+    myTriples += `:${pcaCode} :pcaValor ${data["Prazo de conservação administrativa"]}.\n`;
+  }
+
+  if (data["Nota ao PCA"] && data["Nota ao PCA"].trim() !== "") {
+    myTriples +=
+      `:${pcaCode} :pcaNota ` +
+      `"${data["Nota ao PCA"].replace(/"/g, '\\"')}".\n\n`;
+  }
+
+  myTriples += `:c${cod} :temPCA :${pcaCode}.\n`;
+
+  const myContagem = data["Forma de contagem do PCA"];
+  if (myContagem) {
+    const re_fc_concProc = /conclusão.*procedimento/;
+    const re_fc_cessVig = /cessação.*vigência/;
+    const re_fc_extEnt = /extinção.*entidade/;
+    const re_fc_extDir = /extinção.*direito/;
+    const re_fc_dispLeg = /disposição.*legal/;
+    const re_fc_inicProc = /início.*procedimento/;
+    const re_fc_emiTit = /emissão.*título/;
+
+    if (re_fc_concProc.test(myContagem)) {
+      myTriples += `:${pcaCode} :pcaFormaContagemNormalizada :vc_pcaFormaContagem_conclusaoProcedimento .\n`;
+    } else if (re_fc_dispLeg.test(myContagem)) {
+      myTriples += `:${pcaCode} :pcaFormaContagemNormalizada :vc_pcaFormaContagem_disposicaoLegal .\n`;
+
+      const linhasSubforma = myContagem.split("\n");
+      linhasSubforma.splice(0, 1);
+      const mySubforma = linhasSubforma.join("\n");
+      if (mySubforma.trim().startsWith("10", 0)) {
+        myTriples += `:${pcaCode} :pcaSubformaContagem :vc_pcaSubformaContagem_F01.10 .\n`;
+      } else if (mySubforma.trim().startsWith("11", 0)) {
+        myTriples += `:${pcaCode} :pcaSubformaContagem :vc_pcaSubformaContagem_F01.11 .\n`;
+      } else if (mySubforma.trim().startsWith("12", 0)) {
+        myTriples += `:${pcaCode} :pcaSubformaContagem :vc_pcaSubformaContagem_F01.12 .\n`;
+      } else if (mySubforma.trim().startsWith("1", 0)) {
+        myTriples += `:${pcaCode} :pcaSubformaContagem :vc_pcaSubformaContagem_F01.01 .\n`;
+      } else if (mySubforma.trim().startsWith("2", 0)) {
+        myTriples += `:${pcaCode} :pcaSubformaContagem :vc_pcaSubformaContagem_F01.02 .\n`;
+      } else if (mySubforma.trim().startsWith("3", 0)) {
+        myTriples += `:${pcaCode} :pcaSubformaContagem :vc_pcaSubformaContagem_F01.03 .\n`;
+      } else if (mySubforma.trim().startsWith("4", 0)) {
+        myTriples += `:${pcaCode} :pcaSubformaContagem :vc_pcaSubformaContagem_F01.04 .\n`;
+      } else if (mySubforma.trim().startsWith("5", 0)) {
+        myTriples += `:${pcaCode} :pcaSubformaContagem :vc_pcaSubformaContagem_F01.05 .\n`;
+      } else if (mySubforma.trim().startsWith("6", 0)) {
+        myTriples += `:${pcaCode} :pcaSubformaContagem :vc_pcaSubformaContagem_F01.06 .\n`;
+      } else if (mySubforma.trim().startsWith("7", 0)) {
+        myTriples += `:${pcaCode} :pcaSubformaContagem :vc_pcaSubformaContagem_F01.07 .\n`;
+      } else if (mySubforma.trim().startsWith("8", 0)) {
+        myTriples += `:${pcaCode} :pcaSubformaContagem :vc_pcaSubformaContagem_F01.08 .\n`;
+      } else if (mySubforma.trim().startsWith("9", 0)) {
+        myTriples += `:${pcaCode} :pcaSubformaContagem :vc_pcaSubformaContagem_F01.09 .\n`;
+      } else {
+        console.log(
+          `ERRO: Subforma de contagem inválida: ${mySubforma} em ${pcaCode}`
+        );
+      }
+    } else if (re_fc_extEnt.test(myContagem)) {
+      myTriples += `:${pcaCode} :pcaFormaContagemNormalizada :vc_pcaFormaContagem_extincaoEntidade .\n`;
+    } else if (re_fc_extDir.test(myContagem)) {
+      myTriples += `:${pcaCode} :pcaFormaContagemNormalizada :vc_pcaFormaContagem_extincaoDireito .\n`;
+    } else if (re_fc_cessVig.test(myContagem)) {
+      myTriples += `:${pcaCode} :pcaFormaContagemNormalizada :vc_pcaFormaContagem_cessacaoVigencia .\n`;
+    } else if (re_fc_inicProc.test(myContagem)) {
+      myTriples += `:${pcaCode} :pcaFormaContagemNormalizada :vc_pcaFormaContagem_inicioProcedimento .\n`;
+    } else if (re_fc_emiTit.test(myContagem)) {
+      myTriples += `:${pcaCode} :pcaFormaContagemNormalizada :vc_pcaFormaContagem_emissaoTitulo .\n`;
+    } else {
+      console.log(
+        `ERRO: Forma de contagem inválida: ${myContagem} em ${pcaCode}`
+      );
+    }
+  }
+
+  return myTriples;
+}

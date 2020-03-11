@@ -100,6 +100,8 @@ export default function classParser(data) {
     // MigraExNa
     exNaList,
     // MigraNE
-    neList
+    neList,
+    // MigraPCA
+    pcaCode: `pca_c${codigo}`
   };
 }
