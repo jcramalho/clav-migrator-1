@@ -102,6 +102,7 @@ export default function classParser(data) {
     // MigraNE
     neList,
     // MigraPCA
-    pcaCode: `pca_c${codigo}`
+    pcaCode: `pca_c${codigo}`,
+    dfCode: `df_c${codigo}`
   };
 }

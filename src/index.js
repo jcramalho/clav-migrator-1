@@ -63,6 +63,7 @@ const legTtl = Migrator.read(sheetLeg, "legislacao")
 
 const Ttl100 = Migrator.read(sheet100, "c100")
   .parse(classParser, "c100")
+  .parse(classParser, "c100")
   .convert(classTemp("c100"));
 
 const Ttl150 = Migrator.read(sheet150, "c150")

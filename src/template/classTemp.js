@@ -223,7 +223,13 @@ export default code => data => {
     } else if (classe.classe.length === 3) {
       if (classe["Prazo de conservação administrativa"]) {
         temp += procPCA(classe, classe.pcaCode, classe.codigo);
-      } else {
+      } else if (!(classe.codigo in data.classesLvl3)) {
+        // Registar a classe para tratar o nível 4
+        data.classesLvl3.push(classe.codigo);
+      }
+      if (classe["Destino final"]) {
+        temp += procDF(classe, classe.dfCode, classe.codigo);
+      } else if (!(classe.codigo in data.classesLvl3)) {
         // Registar a classe para tratar o nível 4
         data.classesLvl3.push(classe.codigo);
       }
@@ -234,6 +240,9 @@ export default code => data => {
       if (index > -1) {
         if (classe["Prazo de conservação administrativa"]) {
           temp += procPCA(classe, classe.pcaCode, classe.codigo);
+        }
+        if (classe["Destino final"]) {
+          temp += procDF(classe, classe.dfCode, classe.codigo);
         }
         /*
         else if(jsonObj['Nota ao PCA']){
@@ -337,5 +346,31 @@ function procPCA(data, pcaCode, cod) {
     }
   }
 
+  return myTriples;
+}
+
+// Migração do DF_____________________________________________________________
+
+function procDF(data, dfCode, cod) {
+  let myTriples = `###  http://jcr.di.uminho.pt/m51-clav#${dfCode}\n`;
+  myTriples += `:${dfCode} rdf:type owl:NamedIndividual ,\n`;
+  myTriples += "\t:DestinoFinal";
+  myTriples += ` ;\n\t:dfValor "${data["Destino final"].replace(
+    /(\r\n|\n|\r)/gm,
+    ""
+  )}"`;
+  if (data["Nota ao DF"]) {
+    myTriples += `;\n\t:dfNota "${data["Nota ao DF"].replace(
+      /(\r\n|\n|\r)/gm,
+      ""
+    )}".\n`;
+  } else {
+    myTriples += ".\n";
+  }
+
+  myTriples += `:c${cod} :temDF :${dfCode}.\n`;
+  // if (data["Justificação DF"]) {
+  //   myTriples += procJustDF(data["Justificação DF"], dfCode);
+  // }
   return myTriples;
 }
