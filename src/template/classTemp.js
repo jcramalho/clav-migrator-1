@@ -2,7 +2,7 @@
 /* eslint-disable import/extensions */
 /* eslint-disable camelcase */
 /* eslint-disable no-param-reassign */
-import { proc_c400_10_001 } from "../helper.js";
+import { proc_c400_10_001, printPCA } from "../helper.js";
 
 // import { proc_c400_10_001 } from "../helper";
 
@@ -222,7 +222,7 @@ export default code => data => {
       temp += proc_c400_10_001(classe);
     } else if (classe.classe.length === 3) {
       if (classe["Prazo de conservação administrativa"]) {
-        temp += procPCA(classe, classe.pcaCode, classe.codigo);
+        temp += procPCA(classe, classe.pcaCode, classe.codigo, data.legislacao);
       } else if (!(classe.codigo in data.classesLvl3)) {
         // Registar a classe para tratar o nível 4
         data.classesLvl3.push(classe.codigo);
@@ -239,7 +239,12 @@ export default code => data => {
       const index = data.classesLvl3.indexOf(pai);
       if (index > -1) {
         if (classe["Prazo de conservação administrativa"]) {
-          temp += procPCA(classe, classe.pcaCode, classe.codigo);
+          temp += procPCA(
+            classe,
+            classe.pcaCode,
+            classe.codigo,
+            data.legislacao
+          );
         }
         if (classe["Destino final"]) {
           temp += procDF(classe, classe.dfCode, classe.codigo);
@@ -264,7 +269,7 @@ export default code => data => {
 
 // Migração do PCA_____________________________________________________________
 
-function procPCA(data, pcaCode, cod) {
+function procPCA(data, pcaCode, cod, leg) {
   let myTriples = `###  http://jcr.di.uminho.pt/m51-clav#${pcaCode}\n`;
   myTriples += `:${pcaCode} rdf:type owl:NamedIndividual ,\n`;
   myTriples += "\t:PCA .\n";
@@ -344,6 +349,15 @@ function procPCA(data, pcaCode, cod) {
         `ERRO: Forma de contagem inválida: ${myContagem} em ${pcaCode}`
       );
     }
+  }
+
+  if (data["Justificação PCA"]) {
+    myTriples += `###  http://jcr.di.uminho.pt/m51-clav#${data.justCode}\n`;
+    myTriples += `:${data.justCode} rdf:type owl:NamedIndividual ,\n`;
+    myTriples += "\t:JustificacaoPCA.\n";
+    myTriples += `:${pcaCode} :temJustificacao :${data.justCode}.\n`;
+
+    myTriples += printPCA(data.pcaJust, data.justCode, leg);
   }
 
   return myTriples;

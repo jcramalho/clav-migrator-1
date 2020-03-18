@@ -64,3 +64,97 @@ export function proc_c400_10_001(classe) {
 
   return myTriples;
 }
+
+function getJustification(name, text) {
+  const cleanTxt = text.replace(/(\r\n|\n|\r)/gm, "");
+  const result = cleanTxt.match(`#${name}:[^#]+`);
+  if (!result) return false;
+
+  return result
+    .toString()
+    .replace(`#${name}:`, "")
+    .replace(/"/g, '\\"');
+}
+
+export function getPcaJust(data) {
+  if (!data) return false;
+
+  const legal = getJustification("Critério legal", data);
+  const gest = getJustification("Critério gestionário", data);
+  const admin = getJustification("Critério de utilidade administrativa", data);
+  return { legal, gest, admin };
+}
+
+function printSingleJust(criteria, content, critCode, justCode) {
+  let output = "";
+  output += `:${critCode} rdf:type owl:NamedIndividual ,\n`;
+  output += `\t:${criteria};\n`;
+  output += `\t:conteudo "${content}".\n`;
+  output += `:${justCode} :temCriterio :${critCode}.\n`;
+  return output;
+}
+
+function hasLegAssoc(pca, legList, critCode) {
+  const legAssoc = pca.match(/\[[a-zA-Z0-9\-/ ]+\]/g);
+  if (legAssoc) {
+    const out = legAssoc.reduce((procOut, leg) => {
+      const legRef = leg.substring(1, leg.length - 1);
+      const index = legList.findIndex(
+        legislacao => legislacao.tipoCode === legRef
+      );
+      if (index > -1)
+        return `${procOut}:${critCode} :critTemLegAssoc :${legList[index].legCode}.\n`;
+      return procOut;
+    }, "");
+    return out;
+  }
+  return -1;
+}
+
+function hasProcRel(pca, procList) {
+  const procRel = pca.match(/\[[a-zA-Z0-9\-/ ]+\]/g);
+  const index = procList.findIndex(classe => classe.codigo === procRel);
+}
+
+export function printPCA(pcas, justCode, legList) {
+  let output = "";
+  let critCode = "";
+  let counter = 0;
+
+  if (pcas.legal) {
+    counter += 1;
+    critCode = `crit_${justCode}_${counter}`;
+    output += printSingleJust(
+      "CriterioJustificacaoLegal",
+      pcas.legal,
+      critCode,
+      justCode
+    );
+    output += hasLegAssoc(pcas.legal, legList, critCode);
+  }
+
+  if (pcas.gest) {
+    counter += 1;
+    critCode = `crit_${justCode}_${counter}`;
+    output += printSingleJust(
+      "CriterioJustificacaoGestionario",
+      pcas.gest,
+      critCode,
+      justCode
+    );
+    output += hasLegAssoc(pcas.gest, legList, critCode);
+  }
+
+  if (pcas.admin) {
+    counter += 1;
+    critCode = `crit_${justCode}_${counter}`;
+    output += printSingleJust(
+      "CriterioJustificacaoUtilidadeAdministrativa",
+      pcas.admin,
+      critCode,
+      justCode
+    );
+    output += hasLegAssoc(pcas.admin, legList, critCode);
+  }
+  return output;
+}
