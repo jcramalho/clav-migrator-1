@@ -1,9 +1,18 @@
 import xlsx from "xlsx";
 
-const migrator = { data: {} };
+const migrator = { data: {}, readName: "default" };
 
 migrator.read = function read(sheet, name) {
-  this.data[name] = xlsx.utils.sheet_to_json(sheet, { dateNF: "dd.mm.yyyy" });
+  let readName = name;
+  if (!readName) readName = this.readName;
+  if (!this.data[readName]) this.data[readName] = [];
+  this.data[readName] = [
+    ...this.data[readName],
+    ...xlsx.utils.sheet_to_json(sheet, {
+      dateNF: "dd.mm.yyyy"
+    })
+  ];
+  this.readName = readName;
   return this;
 };
 

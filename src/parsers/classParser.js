@@ -4,7 +4,7 @@ import { getClasse, getEstado, getPcaJust, getDfJust } from "../helper.js";
 
 export default function classParser(data) {
   const codigo = data["Código"]
-    ? data["Código"].toString().replace(/(\r\n|\n|\r)/gm, "")
+    ? data["Código"].toString().replace(/(\r\n|\n|\r|\s)/gm, "")
     : "";
   const titulo = data["Título"]
     ? data["Título"].replace(/(\r\n|\n|\r)/gm, "")

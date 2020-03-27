@@ -107,9 +107,19 @@ function hasLegAssoc(proc, legList, critCode) {
 }
 
 // ------ Classe Associada -----
-function hasProcRel(pca, procList) {
-  const procRel = pca.match(/\[[a-zA-Z0-9\-/ ]+\]/g);
-  const index = procList.findIndex(classe => classe.codigo === procRel);
+function hasProcRel(proc, procList, critCode) {
+  const procRel = proc.match(/\d{3}\.\d{2,3}\.\d{3}/g);
+  if (procRel) {
+    const out = procRel.reduce((procOut, classProc) => {
+      const index = procList.findIndex(pr => pr.codigo === classProc);
+      if (index > -1) {
+        return `${procOut}:${critCode} :critTemProcRel :c${classProc}.\n`;
+      }
+      return procOut;
+    }, "");
+    return out;
+  }
+  return "";
 }
 
 // ------ Migra JustPCA-----
@@ -123,14 +133,14 @@ export function getPcaJust(data) {
   return { legal, gest, admin };
 }
 
-export function printJustPCA(pcas, justPcaCode, legList) {
+export function printJustPCA(pcas, justPcaCode, legList, procList) {
   let output = "";
   let critCode = "";
   let counter = 0;
 
   if (pcas.legal) {
     counter += 1;
-    critCode = `crit_${justPcaCode}_${counter}`;
+    critCode = `crit_${justPcaCode}_ccccc${counter}`;
     output += printSingleJust(
       "CriterioJustificacaoLegal",
       pcas.legal,
@@ -138,11 +148,12 @@ export function printJustPCA(pcas, justPcaCode, legList) {
       justPcaCode
     );
     output += hasLegAssoc(pcas.legal, legList, critCode);
+    output += hasProcRel(pcas.legal, procList, critCode);
   }
 
   if (pcas.gest) {
     counter += 1;
-    critCode = `crit_${justPcaCode}_${counter}`;
+    critCode = `crit_${justPcaCode}_wwww${counter}`;
     output += printSingleJust(
       "CriterioJustificacaoGestionario",
       pcas.gest,
@@ -150,11 +161,12 @@ export function printJustPCA(pcas, justPcaCode, legList) {
       justPcaCode
     );
     output += hasLegAssoc(pcas.gest, legList, critCode);
+    output += hasProcRel(pcas.gest, procList, critCode);
   }
 
   if (pcas.admin) {
     counter += 1;
-    critCode = `crit_${justPcaCode}_${counter}`;
+    critCode = `crit_${justPcaCode}_bbbbb${counter}`;
     output += printSingleJust(
       "CriterioJustificacaoUtilidadeAdministrativa",
       pcas.admin,
@@ -162,6 +174,7 @@ export function printJustPCA(pcas, justPcaCode, legList) {
       justPcaCode
     );
     output += hasLegAssoc(pcas.admin, legList, critCode);
+    output += hasProcRel(pcas.admin, procList, critCode);
   }
   return output;
 }
@@ -180,7 +193,7 @@ export function getDfJust(data) {
   return { legal, dens, comp };
 }
 
-export function printJustDF(dfs, justDfCode, legList) {
+export function printJustDF(dfs, justDfCode, legList, procList) {
   let output = "";
   let critCode = "";
   let counter = 0;
@@ -195,6 +208,7 @@ export function printJustDF(dfs, justDfCode, legList) {
       justDfCode
     );
     output += hasLegAssoc(dfs.legal, legList, critCode);
+    output += hasProcRel(dfs.legal, procList, critCode);
   }
 
   if (dfs.dens) {
@@ -207,6 +221,7 @@ export function printJustDF(dfs, justDfCode, legList) {
       justDfCode
     );
     output += hasLegAssoc(dfs.dens, legList, critCode);
+    output += hasProcRel(dfs.dens, procList, critCode);
   }
 
   if (dfs.comp) {
@@ -219,6 +234,7 @@ export function printJustDF(dfs, justDfCode, legList) {
       justDfCode
     );
     output += hasLegAssoc(dfs.comp, legList, critCode);
+    output += hasProcRel(dfs.comp, procList, critCode);
   }
   return output;
 }
