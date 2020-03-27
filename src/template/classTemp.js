@@ -2,7 +2,7 @@
 /* eslint-disable import/extensions */
 /* eslint-disable camelcase */
 /* eslint-disable no-param-reassign */
-import { proc_c400_10_001, printPCA } from "../helper.js";
+import { proc_c400_10_001, printJustPCA, printJustDF } from "../helper.js";
 
 // import { proc_c400_10_001 } from "../helper";
 
@@ -130,7 +130,7 @@ export default code => data => {
         } else if (tipo.startsWith("Complementar")) {
           temp += `\t:eComplementarDe :c${classe.codProcRel[index]} ;\n`;
         } else if (tipo.match(/\s*Cruzad/gi)) {
-          temp += `\t:eCruzadoCom ${classe.codProcRel[index]} ;\n`;
+          temp += `\t:eCruzadoCom :c${classe.codProcRel[index]} ;\n`;
         } else if (tipo.match(/\s*Suplement.?\s*de/)) {
           temp += `\t:eSuplementoDe :c${classe.codProcRel[index]} ;\n`;
         } else if (tipo.match(/\s*Suplement.?\s*para/)) {
@@ -228,7 +228,7 @@ export default code => data => {
         data.classesLvl3.push(classe.codigo);
       }
       if (classe["Destino final"]) {
-        temp += procDF(classe, classe.dfCode, classe.codigo);
+        temp += procDF(classe, classe.dfCode, classe.codigo, data.legislacao);
       } else if (!(classe.codigo in data.classesLvl3)) {
         // Registar a classe para tratar o nível 4
         data.classesLvl3.push(classe.codigo);
@@ -247,7 +247,7 @@ export default code => data => {
           );
         }
         if (classe["Destino final"]) {
-          temp += procDF(classe, classe.dfCode, classe.codigo);
+          temp += procDF(classe, classe.dfCode, classe.codigo, data.legislacao);
         }
         /*
         else if(jsonObj['Nota ao PCA']){
@@ -352,12 +352,12 @@ function procPCA(data, pcaCode, cod, leg) {
   }
 
   if (data["Justificação PCA"]) {
-    myTriples += `###  http://jcr.di.uminho.pt/m51-clav#${data.justCode}\n`;
-    myTriples += `:${data.justCode} rdf:type owl:NamedIndividual ,\n`;
+    myTriples += `###  http://jcr.di.uminho.pt/m51-clav#${data.justPcaCode}\n`;
+    myTriples += `:${data.justPcaCode} rdf:type owl:NamedIndividual ,\n`;
     myTriples += "\t:JustificacaoPCA.\n";
-    myTriples += `:${pcaCode} :temJustificacao :${data.justCode}.\n`;
+    myTriples += `:${pcaCode} :temJustificacao :${data.justPcaCode}.\n`;
 
-    myTriples += printPCA(data.pcaJust, data.justCode, leg);
+    myTriples += printJustPCA(data.pcaJust, data.justPcaCode, leg);
   }
 
   return myTriples;
@@ -365,7 +365,7 @@ function procPCA(data, pcaCode, cod, leg) {
 
 // Migração do DF_____________________________________________________________
 
-function procDF(data, dfCode, cod) {
+function procDF(data, dfCode, cod, leg) {
   let myTriples = `###  http://jcr.di.uminho.pt/m51-clav#${dfCode}\n`;
   myTriples += `:${dfCode} rdf:type owl:NamedIndividual ,\n`;
   myTriples += "\t:DestinoFinal";
@@ -383,8 +383,14 @@ function procDF(data, dfCode, cod) {
   }
 
   myTriples += `:c${cod} :temDF :${dfCode}.\n`;
-  // if (data["Justificação DF"]) {
-  //   myTriples += procJustDF(data["Justificação DF"], dfCode);
-  // }
+
+  if (data["Justificação DF"]) {
+    myTriples += `###  http://jcr.di.uminho.pt/m51-clav#${data.justDfCode}\n`;
+    myTriples += `:${data.justDfCode} rdf:type owl:NamedIndividual ,\n`;
+    myTriples += "\t:JustificacaoDF.\n";
+
+    myTriples += `:${dfCode} :temJustificacao :${data.justDfCode}.\n`;
+    myTriples += printJustDF(data.dfJust, data.justDfCode, leg);
+  }
   return myTriples;
 }

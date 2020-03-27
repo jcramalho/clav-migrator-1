@@ -8,7 +8,7 @@ export default function entTemp(data) {
     temp += `\t:entSigla "${ent.sigla}";\n`;
     // TODO: datas criação e extinçao
     temp += `\t:entDesignacao "${ent.Designação}";\n`;
-    temp += `\t:entInternacional "${ent.international}";.\n`;
+    temp += `\t:entInternacional "${ent.international}".\n`;
     if (ent.entTipo) {
       temp += ent.entTipo.reduce((previous, tip) => {
         if (tip) {

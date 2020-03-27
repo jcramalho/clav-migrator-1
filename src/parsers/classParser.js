@@ -1,6 +1,6 @@
 /* eslint-disable import/extensions */
 import nanoid from "nanoid";
-import { getClasse, getEstado, getPcaJust } from "../helper.js";
+import { getClasse, getEstado, getPcaJust, getDfJust } from "../helper.js";
 
 export default function classParser(data) {
   const codigo = data["Código"]
@@ -103,8 +103,11 @@ export default function classParser(data) {
     neList,
     // MigraPCA
     pcaCode: `pca_c${codigo}`,
+    justPcaCode: `just_pca_c${codigo}`,
+    pcaJust: getPcaJust(data["Justificação PCA"]),
+    // MigraDF
     dfCode: `df_c${codigo}`,
-    justCode: `just_pca_c${codigo}`,
-    pcaJust: getPcaJust(data["Justificação PCA"])
+    justDfCode: `just_df_c${codigo}`,
+    dfJust: getDfJust(data["Justificação DF"])
   };
 }

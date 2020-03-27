@@ -65,6 +65,9 @@ export function proc_c400_10_001(classe) {
   return myTriples;
 }
 
+// Migração JUSTIFICACOES______________________________________
+// Auxiliares
+
 function getJustification(name, text) {
   const cleanTxt = text.replace(/(\r\n|\n|\r)/gm, "");
   const result = cleanTxt.match(`#${name}:[^#]+`);
@@ -76,15 +79,6 @@ function getJustification(name, text) {
     .replace(/"/g, '\\"');
 }
 
-export function getPcaJust(data) {
-  if (!data) return false;
-
-  const legal = getJustification("Critério legal", data);
-  const gest = getJustification("Critério gestionário", data);
-  const admin = getJustification("Critério de utilidade administrativa", data);
-  return { legal, gest, admin };
-}
-
 function printSingleJust(criteria, content, critCode, justCode) {
   let output = "";
   output += `:${critCode} rdf:type owl:NamedIndividual ,\n`;
@@ -94,8 +88,9 @@ function printSingleJust(criteria, content, critCode, justCode) {
   return output;
 }
 
-function hasLegAssoc(pca, legList, critCode) {
-  const legAssoc = pca.match(/\[[a-zA-Z0-9\-/ ]+\]/g);
+// ------ Legislacao Associada -----
+function hasLegAssoc(proc, legList, critCode) {
+  const legAssoc = proc.match(/\[[a-zA-Z0-9\-/ ]+\]/g);
   if (legAssoc) {
     const out = legAssoc.reduce((procOut, leg) => {
       const legRef = leg.substring(1, leg.length - 1);
@@ -108,53 +103,122 @@ function hasLegAssoc(pca, legList, critCode) {
     }, "");
     return out;
   }
-  return -1;
+  return "";
 }
 
+// ------ Classe Associada -----
 function hasProcRel(pca, procList) {
   const procRel = pca.match(/\[[a-zA-Z0-9\-/ ]+\]/g);
   const index = procList.findIndex(classe => classe.codigo === procRel);
 }
 
-export function printPCA(pcas, justCode, legList) {
+// ------ Migra JustPCA-----
+
+export function getPcaJust(data) {
+  if (!data) return false;
+
+  const legal = getJustification("Critério legal", data);
+  const gest = getJustification("Critério gestionário", data);
+  const admin = getJustification("Critério de utilidade administrativa", data);
+  return { legal, gest, admin };
+}
+
+export function printJustPCA(pcas, justPcaCode, legList) {
   let output = "";
   let critCode = "";
   let counter = 0;
 
   if (pcas.legal) {
     counter += 1;
-    critCode = `crit_${justCode}_${counter}`;
+    critCode = `crit_${justPcaCode}_${counter}`;
     output += printSingleJust(
       "CriterioJustificacaoLegal",
       pcas.legal,
       critCode,
-      justCode
+      justPcaCode
     );
     output += hasLegAssoc(pcas.legal, legList, critCode);
   }
 
   if (pcas.gest) {
     counter += 1;
-    critCode = `crit_${justCode}_${counter}`;
+    critCode = `crit_${justPcaCode}_${counter}`;
     output += printSingleJust(
       "CriterioJustificacaoGestionario",
       pcas.gest,
       critCode,
-      justCode
+      justPcaCode
     );
     output += hasLegAssoc(pcas.gest, legList, critCode);
   }
 
   if (pcas.admin) {
     counter += 1;
-    critCode = `crit_${justCode}_${counter}`;
+    critCode = `crit_${justPcaCode}_${counter}`;
     output += printSingleJust(
       "CriterioJustificacaoUtilidadeAdministrativa",
       pcas.admin,
       critCode,
-      justCode
+      justPcaCode
     );
     output += hasLegAssoc(pcas.admin, legList, critCode);
+  }
+  return output;
+}
+
+// ------ Migra JustDF-----
+
+export function getDfJust(data) {
+  if (!data) return false;
+
+  const legal = getJustification("Critério legal", data);
+  const dens = getJustification("Critério de densidade informacional", data);
+  const comp = getJustification(
+    "Critério de complementaridade informacional",
+    data
+  );
+  return { legal, dens, comp };
+}
+
+export function printJustDF(dfs, justDfCode, legList) {
+  let output = "";
+  let critCode = "";
+  let counter = 0;
+
+  if (dfs.legal) {
+    counter += 1;
+    critCode = `crit_${justDfCode}_${counter}`;
+    output += printSingleJust(
+      "CriterioJustificacaoLegal",
+      dfs.legal,
+      critCode,
+      justDfCode
+    );
+    output += hasLegAssoc(dfs.legal, legList, critCode);
+  }
+
+  if (dfs.dens) {
+    counter += 1;
+    critCode = `crit_${justDfCode}_${counter}`;
+    output += printSingleJust(
+      "CriterioJustificacaoDensidadeInfo",
+      dfs.dens,
+      critCode,
+      justDfCode
+    );
+    output += hasLegAssoc(dfs.dens, legList, critCode);
+  }
+
+  if (dfs.comp) {
+    counter += 1;
+    critCode = `crit_${justDfCode}_${counter}`;
+    output += printSingleJust(
+      "CriterioJustificacaoComplementaridadeInfo",
+      dfs.comp,
+      critCode,
+      justDfCode
+    );
+    output += hasLegAssoc(dfs.comp, legList, critCode);
   }
   return output;
 }
