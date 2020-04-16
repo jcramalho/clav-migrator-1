@@ -1,6 +1,8 @@
 export default function tiTemp(data) {
   let ttl = "";
+  let counter = 0;
   ttl += data.ti.reduce((prev, ti) => {
+    counter += 1;
     let temp = `${prev}###  http://jcr.di.uminho.pt/m51-clav#${ti.tiCode}\n`;
     temp += `:${ti.tiCode} rdf:type owl:NamedIndividual ,\n`;
     temp += `\t:TermoIndice ;\n`;
@@ -11,5 +13,8 @@ export default function tiTemp(data) {
 
     return temp;
   }, "");
+
+  console.log(`Foram migradas ${counter} termos-índice`);
+
   return ttl;
 }

@@ -1,6 +1,8 @@
 export default function legTemp(data) {
   let ttl = "";
+  let counter = 0;
   ttl += data.legislacao.reduce((prev, legislacao) => {
+    counter += 1;
     let temp = `${prev}###  http://jcr.di.uminho.pt/m51-clav#${legislacao.legCode}\n`;
     temp += `:${legislacao.legCode} rdf:type owl:NamedIndividual ,\n`;
     temp += `\t:Legislacao ;\n`;
@@ -19,6 +21,9 @@ export default function legTemp(data) {
     temp += `\t:diplomaLink "${legislacao.Link}".\n`;
     return temp;
   }, "");
+
+  console.log(`Foram migradas ${counter} legislações`);
+
   return ttl;
 }
 

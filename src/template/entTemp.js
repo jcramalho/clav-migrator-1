@@ -1,6 +1,8 @@
 export default function entTemp(data) {
   let ttl = "";
+  let counter = 0;
   ttl += data.entidade.reduce((prev, ent) => {
+    counter += 1;
     let temp = `${prev}###  http://jcr.di.uminho.pt/m51-clav#ent_${ent.sigla}\n`;
     temp += `:ent_${ent.sigla} rdf:type owl:NamedIndividual ,\n \t\t:Entidade ;\n`;
     temp += `\t:entEstado "${ent.estado}";\n`;
@@ -20,5 +22,7 @@ export default function entTemp(data) {
 
     return temp;
   }, "");
+  console.log(`Foram migradas ${counter} entidades`);
+
   return ttl;
 }

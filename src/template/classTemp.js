@@ -9,7 +9,10 @@ import { proc_c400_10_001, printJustPCA, printJustDF } from "../helper.js";
 /* eslint-disable no-nested-ternary */
 export default code => data => {
   let ttl = "";
+  let counter = 0;
   ttl += data[code].reduce((prev, classe) => {
+    counter += 1;
+
     let temp = `${prev}###  http://jcr.di.uminho.pt/m51-clav#${classe.classCod}\n`;
     temp += `:${classe.classCod} rdf:type owl:NamedIndividual ;\n`;
     temp += `\t:classeStatus "${classe.estado}";\n`;
@@ -63,8 +66,8 @@ export default code => data => {
                   .length
                   ? "ent_"
                   : data.tipologia.filter(tip => tip.sigla === part).length
-                  ? "tip_"
-                  : false;
+                    ? "tip_"
+                    : false;
                 if (prefixo) {
                   // Tipo de participação
                   switch (classe.tiposInt[index]) {
@@ -103,8 +106,8 @@ export default code => data => {
           const prefixo = data.entidade.filter(ent => ent.sigla === dono).length
             ? "ent_"
             : data.tipologia.filter(tip => tip.sigla === dono).length
-            ? "tip_"
-            : false;
+              ? "tip_"
+              : false;
 
           temp += `\t:temDono :${prefixo}${dono} ;\n`;
         }
@@ -283,6 +286,9 @@ export default code => data => {
 
     return temp;
   }, "");
+
+  console.log(`Foram migradas ${counter} classes`);
+
   return ttl;
 };
 
