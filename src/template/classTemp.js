@@ -66,8 +66,8 @@ export default code => data => {
                   .length
                   ? "ent_"
                   : data.tipologia.filter(tip => tip.sigla === part).length
-                    ? "tip_"
-                    : false;
+                  ? "tip_"
+                  : false;
                 if (prefixo) {
                   // Tipo de participação
                   switch (classe.tiposInt[index]) {
@@ -106,8 +106,8 @@ export default code => data => {
           const prefixo = data.entidade.filter(ent => ent.sigla === dono).length
             ? "ent_"
             : data.tipologia.filter(tip => tip.sigla === dono).length
-              ? "tip_"
-              : false;
+            ? "tip_"
+            : false;
 
           temp += `\t:temDono :${prefixo}${dono} ;\n`;
         }
@@ -307,7 +307,7 @@ function procPCA(data, pcaCode, cod, leg, classes) {
   if (data["Nota ao PCA"] && data["Nota ao PCA"].trim() !== "") {
     myTriples +=
       `:${pcaCode} :pcaNota ` +
-      `"${data["Nota ao PCA"].replace(/"/g, '\\"')}".\n\n`;
+      `"${data["Nota ao PCA"].replace(/"/g, '\\"').replace(/\n/g, " ")}".\n\n`;
   }
 
   myTriples += `:c${cod} :temPCA :${pcaCode}.\n`;
