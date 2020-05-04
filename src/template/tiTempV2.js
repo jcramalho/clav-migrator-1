@@ -1,12 +1,13 @@
 /**
  * Example output [NOT REAL]:
  *
- * ###  http://jcr.di.uminho.pt/m51-clav#tip_AC
- * :tip_AAGR rdf:type owl:NamedIndividual ,
- * :TipologiaEntidade ;
- * :tipEstado "A";
- * :tipSigla "AAGR";
+ * ###  http://jcr.di.uminho.pt/m51-clav#ti_9_m1NIOuma8tisqbwvYyZ
+ * :ti_9_m1NIOuma8tisqbwvYyZ rdf:type owl:NamedIndividual ,
+ * :TermoIndice ;
+ * rdfs:label "TI: Ato legislativo (produção e comunicação)";
+ * :estaAssocClasse :c100.10.001;
  * :tipDesignacao "Assembleias de apuramento geral dos resultados".
+ * :termo "Ato legislativo (produção e comunicação)".
  */
 export default function template(ti, print) {
   print(
