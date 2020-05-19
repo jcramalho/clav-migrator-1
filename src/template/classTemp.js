@@ -172,6 +172,7 @@ export default code => data => {
 
     temp += `\t:descricao "${classe.descricao}".\n`;
 
+    //TODO:
     // MigraNA
     classe.naList.pop();
 
