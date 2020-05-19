@@ -17,7 +17,9 @@ migrator.read = function read(sheet, name) {
 };
 
 migrator.parse = function parse(parser, name) {
-  this.data[name] = this.data[name].map(line => parser(line, this.data));
+  this.data[name] = this.data[name].map(line =>
+    parser(line, this.data, this.report)
+  );
   return this;
 };
 
@@ -31,13 +33,19 @@ migrator.convert2 = function convert(template, name) {
   let print = (...lines) =>
     lines.forEach(line => {
       if (!line) return;
-
       document += line + "\n";
     });
 
-  this.data[name].forEach(item => template(item, print));
+  this.data[name].forEach(item =>
+    template(item, print, this.report, this.data)
+  );
 
   return document;
+};
+
+migrator.report = function report(msg, defaultVal = null) {
+  console.log(msg);
+  return defaultVal;
 };
 
 export default migrator;
