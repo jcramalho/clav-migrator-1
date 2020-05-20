@@ -9,8 +9,8 @@ migrator.read = function read(sheet, name) {
   this.data[readName] = [
     ...this.data[readName],
     ...xlsx.utils.sheet_to_json(sheet, {
-      dateNF: "dd.mm.yyyy",
-    }),
+      dateNF: "dd.mm.yyyy"
+    })
   ];
   this.readName = readName;
   return this;
@@ -30,10 +30,10 @@ migrator.convert = function convert(template) {
 migrator.convert2 = function convert(template, name) {
   let document = "";
 
-  let print = (...lines) =>
+  const print = (...lines) =>
     lines.forEach(line => {
       if (!line) return;
-      document += line + "\n";
+      document += `${line}\n`;
     });
 
   this.data[name].forEach(item =>

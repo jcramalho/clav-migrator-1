@@ -26,9 +26,9 @@ export default function template(ent, print) {
   );
 }
 
-function entTipo(sigla, entTipo) {
-  if (!entTipo) return;
-  return entTipo.reduce((prev, tip, index) => {
+function entTipo(sigla, tipo) {
+  if (!tipo) return "";
+  return tipo.reduce((prev, tip, index) => {
     if (!tip) return prev;
     if (index) prev += "\n";
     return `${prev}:ent_${sigla} :pertenceTipologiaEnt :tip_${tip}.`;

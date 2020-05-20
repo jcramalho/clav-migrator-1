@@ -24,7 +24,6 @@ const sheet = workbook.Sheets["ent.sioe.csv"];
 const sheetTi = workbook.Sheets["ti.csv"];
 const sheetTipo = workbook.Sheets["tip_ent.csv"];
 const sheetLeg = workbook.Sheets["leg.csv"];
-// TODO: Parse all class sheets
 const sheet100 = workbook.Sheets["100.csv"];
 const sheet150 = workbook.Sheets["150.csv"];
 const sheet200 = workbook.Sheets["200.csv"];
@@ -87,5 +86,4 @@ fs.writeFileSync("data/ent.ttl", entTtl);
 fs.writeFileSync("data/ti.ttl", tiTtl);
 fs.writeFileSync("data/tipo.ttl", tipoTtl);
 fs.writeFileSync("data/leg.ttl", legTtl);
-
 fs.writeFileSync("data/classes.ttl", classesTtl);

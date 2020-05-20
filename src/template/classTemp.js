@@ -172,7 +172,6 @@ export default code => data => {
 
     temp += `\t:descricao "${classe.descricao}".\n`;
 
-    //TODO:
     // MigraNA
     classe.naList.pop();
 
@@ -218,6 +217,7 @@ export default code => data => {
       return out;
     }, "");
 
+    // TODO:
     if (!Array.isArray(data.classesLvl3)) {
       data.classesLvl3 = [];
     }
