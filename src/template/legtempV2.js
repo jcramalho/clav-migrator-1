@@ -31,8 +31,8 @@ export default function template(leg, print) {
   );
 }
 
-function entResp(entResp) {
-  return entResp.reduce((prev, ent, index) => {
+function entResp(resp) {
+  return resp.reduce((prev, ent, index) => {
     if (index) prev += "\n";
     return `${prev}\t:temEntidadeResponsavel :ent_${ent};`;
   }, "");
