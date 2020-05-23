@@ -22,7 +22,7 @@ export default function template(leg, print) {
     `\t:rdfs:label "Leg.: ${leg.tipoCode}";`,
     `\t:diplomaTipo "${leg.Tipo}";`,
     entResp(leg.entidadesResp),
-    `\t:diplomaNumero "${leg.Número}";`,
+    `\t:diplomaNumero "${leg.numero}";`,
     `\t:diplomaData "${leg.Data}";`,
     `\t:diplomaSumario "${leg.sumario}";`,
     `\t:diplomaEstado "${leg.estado}";`,

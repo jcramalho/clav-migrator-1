@@ -7,7 +7,7 @@ export default function classParser(data) {
     ? data["Código"].toString().replace(/(\r\n|\n|\r|\s)/gm, "")
     : "";
   const titulo = data["Título"]
-    ? data["Título"].replace(/(\r\n|\n|\r)/gm, "")
+    ? data["Título"].trim().replace(/(\r\n|\n|\r)/gm, "")
     : "";
   // MigraNA
   const naText = data["Notas de aplicação"]
@@ -16,22 +16,26 @@ export default function classParser(data) {
         .replace(/"/g, '\\"')
         .split("#")
     : [];
-  const naList = naText.map(conteudo => {
-    return {
-      id: `na_c${codigo}_${nanoid()}`,
-      conteudo
-    };
-  });
+  const naList = naText
+    .filter(conteudo => conteudo.trim())
+    .map(conteudo => {
+      return {
+        id: `na_c${codigo}_${nanoid()}`,
+        conteudo
+      };
+    });
   // MigraExNa
   const exNaText = data["Exemplos de NA"]
     ? data["Exemplos de NA"].replace(/(\r\n|\n|\r)/gm, "").split("#")
     : [];
-  const exNaList = exNaText.map(conteudo => {
-    return {
-      id: `exna_c${codigo}_${nanoid()}`,
-      conteudo
-    };
-  });
+  const exNaList = exNaText
+    .filter(conteudo => conteudo.trim())
+    .map(conteudo => {
+      return {
+        id: `exna_c${codigo}_${nanoid()}`,
+        conteudo
+      };
+    });
   // MigraNE
   const neText = data["Notas de exclusão"]
     ? data["Notas de exclusão"]
@@ -39,12 +43,14 @@ export default function classParser(data) {
         .replace(/"/g, '\\"')
         .split("#")
     : [];
-  const neList = neText.map(conteudo => {
-    return {
-      id: `ne_c${codigo}_${nanoid()}`,
-      conteudo
-    };
-  });
+  const neList = neText
+    .filter(conteudo => conteudo.trim())
+    .map(conteudo => {
+      return {
+        id: `ne_c${codigo}_${nanoid()}`,
+        conteudo
+      };
+    });
 
   return {
     ...data,

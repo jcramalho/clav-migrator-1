@@ -7,9 +7,14 @@ function getEntTipo(data) {
 export default function entParser(data) {
   return {
     ...data,
-    sigla: data.Sigla.replace(/\.|,/gm, "_").replace(/ /gm, "_"),
+    sigla: !data.Sigla
+      ? ""
+      : data.Sigla.trim()
+          .replace(/\.|,/gm, "_")
+          .replace(/ /gm, "_"),
     estado: !data.Estado || data.Estado === "Ativo" ? "A" : "I",
     international: !data.International ? "" : data.International,
-    entTipo: getEntTipo(data["Tipologia de Entidade"])
+    entTipo: getEntTipo(data["Tipologia de Entidade"]),
+    idSIOE: data["ID SIOE"] ? data["ID SIOE"] : ""
   };
 }

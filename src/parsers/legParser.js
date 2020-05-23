@@ -22,7 +22,8 @@ export default function legParser(data) {
     legCode: `leg_${nanoid()}`,
     sumario: data.Sumário.replace(/"/gm, '\\"').replace(/(\r\n|\n|\r)/gm, ""),
     entidadesResp: parseEntidades(data),
-    estado: data.Estado ? data.Estado : "A"
+    estado: data.Estado ? data.Estado : "A",
+    numero: data.Número ? data.Número : ""
   };
 }
 

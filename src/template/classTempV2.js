@@ -58,16 +58,20 @@ function printTipoProc(classe) {
 
 function printTransversalProc(classe) {
   if (!classe["Processo transversal (S/N)"]) return "";
-  return `\t:processoTransversal "${classe["Processo transversal (S/N)"]}" ;`;
+  return `\t:processoTransversal "${classe[
+    "Processo transversal (S/N)"
+  ].trim()}" ;`;
 }
 
 function printParticipantProc(classe, entidade, tipologia) {
   if (classe["Processo transversal (S/N)"] === "S") {
     const output = classe.parts.reduce((prev, part, index) => {
-      part.replace(/^[_]+/, "");
+      part = part.replace(/^[_]+/, "");
       if (!part) return prev;
       if (index) prev += "\n";
       const prefix = getPrefix(part, entidade, tipologia);
+
+      if (!classe.tiposInt[index]) return prev;
 
       return `${prev}\t:temParticipante${
         {
@@ -90,6 +94,7 @@ function printOwnersProc(classe, entidade, tipologia) {
     if (!dono) return prev;
     if (index) prev += "\n";
     const prefix = getPrefix(dono, entidade, tipologia);
+
     return `${prev}\t:temDono :${prefix}${dono} ;`;
   }, "");
 }
@@ -137,7 +142,7 @@ function PrintUnif(classe) {
 }
 
 function PrintMigraNa(classe) {
-  classe.naList.pop();
+  // classe.naList.pop();
   const migraNa = MigraBuilder(
     "NotaAplicacao",
     "Nota de Aplicação",
@@ -150,20 +155,20 @@ function PrintMigraNa(classe) {
 }
 
 function PrintMigraExNa(classe) {
-  classe.exNaList.pop();
-  const migraNe = MigraBuilder(
+  // classe.exNaList.pop();
+  const migraExNa = MigraBuilder(
     "ExemploNotaAplicacao",
     "Exemplo de nota de aplicação",
     "temExemploNA"
   );
   return classe.exNaList.reduce((prev, exNa, index) => {
     if (index) prev += "\n";
-    return `${prev}${migraNe(exNa.id, exNa.conteudo, classe.classCod)}`;
+    return `${prev}${migraExNa(exNa.id, exNa.conteudo, classe.classCod)}`;
   }, "");
 }
 
 function PrintMigraNe(classe) {
-  classe.neList.pop();
+  // classe.neList.pop();
   const migraNe = MigraBuilder(
     "NotaExclusao",
     "Nota de Exclusão",
@@ -362,15 +367,13 @@ function procDF(data, dfCode, cod, leg, classes) {
   let out = `###  http://jcr.di.uminho.pt/m51-clav#${dfCode}\n`;
   out += `:${dfCode} rdf:type owl:NamedIndividual ,\n`;
   out += "\t:DestinoFinal";
-  out += ` ;\n\t:dfValor "${data["Destino final"].replace(
-    /(\r\n|\n|\r)/gm,
-    ""
-  )}"`;
+  out += ` ;\n\t:dfValor "${data["Destino final"]
+    .trim()
+    .replace(/(\r\n|\n|\r)/gm, "")}"`;
   if (data["Nota ao DF"]) {
-    out += `;\n\t:dfNota "${data["Nota ao DF"].replace(
-      /(\r\n|\n|\r)/gm,
-      ""
-    )}".\n`;
+    out += `;\n\t:dfNota "${data["Nota ao DF"]
+      .trim()
+      .replace(/(\r\n|\n|\r)/gm, "")}".\n`;
   } else {
     out += ".\n";
   }

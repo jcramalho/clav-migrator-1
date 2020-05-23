@@ -18,7 +18,7 @@ export default function template(ent, print) {
     `:ent_${ent.sigla} rdf:type owl:NamedIndividual ,`,
     `\t:Entidade ;`,
     `\t:entEstado "${ent.estado}";`,
-    `\t:entSIOE "${ent["ID SIOE"]}";`,
+    `\t:entSIOE "${ent.idSIOE}";`,
     `\t:entSigla "${ent.sigla}";`,
     `\t:entDesignacao "${ent.Designação}";`,
     `\t:entInternacional "${ent.international}".`,

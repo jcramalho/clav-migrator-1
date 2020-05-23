@@ -3,7 +3,7 @@ export function getEstado(estado) {
   if (estado === undefined || estado.trim() === "") return "A";
   if (/[hH][aA][rR][mM][oO][nN]/.test(estado)) return "H";
   if (/[iI][nN][Aa][tT][iI][vV]/.test(estado)) return "I";
-  return false;
+  return "";
 }
 
 export function getClasse(cod) {
@@ -140,7 +140,7 @@ export function printJustPCA(pcas, justPcaCode, legList, procList) {
 
   if (pcas.legal) {
     counter += 1;
-    critCode = `crit_${justPcaCode}_ccccc${counter}`;
+    critCode = `crit_${justPcaCode}_${counter}`;
     output += printSingleJust(
       "CriterioJustificacaoLegal",
       pcas.legal,
@@ -153,7 +153,7 @@ export function printJustPCA(pcas, justPcaCode, legList, procList) {
 
   if (pcas.gest) {
     counter += 1;
-    critCode = `crit_${justPcaCode}_wwww${counter}`;
+    critCode = `crit_${justPcaCode}_${counter}`;
     output += printSingleJust(
       "CriterioJustificacaoGestionario",
       pcas.gest,
@@ -166,7 +166,7 @@ export function printJustPCA(pcas, justPcaCode, legList, procList) {
 
   if (pcas.admin) {
     counter += 1;
-    critCode = `crit_${justPcaCode}_bbbbb${counter}`;
+    critCode = `crit_${justPcaCode}_${counter}`;
     output += printSingleJust(
       "CriterioJustificacaoUtilidadeAdministrativa",
       pcas.admin,
