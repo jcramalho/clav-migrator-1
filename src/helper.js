@@ -70,13 +70,14 @@ export function proc_c400_10_001(classe) {
 
 function getJustification(name, text) {
   const cleanTxt = text.replace(/(\r\n|\n|\r)/gm, "");
-  const result = cleanTxt.match(`#${name}:[^#]+`);
+  const lexRegex = new RegExp(`#${name}:[^#]+`, "g");
+  const result = cleanTxt.match(lexRegex);
+
   if (!result) return false;
 
-  return result
-    .toString()
-    .replace(`#${name}:`, "")
-    .replace(/"/g, '\\"');
+  result.forEach(res => res.replace(`#${name}:`, "").replace(/"/g, '\\"'));
+
+  return result;
 }
 
 function printSingleJust(criteria, content, critCode, justCode) {
@@ -107,8 +108,7 @@ function hasLegAssoc(proc, legList, critCode) {
 }
 
 // ------ Classe Associada -----
-function hasProcRel(proc, procList, critCode) {
-  const procRel = proc.match(/\d{3}\.\d{2,3}\.\d{3}/g);
+function hasProcRel(procRel, procList, critCode) {
   if (procRel) {
     const out = procRel.reduce((procOut, classProc) => {
       const index = procList.findIndex(pr => pr.codigo === classProc);
@@ -139,42 +139,70 @@ export function printJustPCA(pcas, justPcaCode, legList, procList) {
   let counter = 0;
 
   if (pcas.legal) {
-    counter += 1;
-    critCode = `crit_${justPcaCode}_${counter}`;
-    output += printSingleJust(
-      "CriterioJustificacaoLegal",
-      pcas.legal,
-      critCode,
-      justPcaCode
-    );
-    output += hasLegAssoc(pcas.legal, legList, critCode);
-    output += hasProcRel(pcas.legal, procList, critCode);
+    output += pcas.legal.reduce((prev, crit) => {
+      let out;
+      counter += 1;
+      critCode = `crit_${justPcaCode}_${counter}`;
+      out += printSingleJust(
+        "CriterioJustificacaoLegal",
+        crit,
+        critCode,
+        justPcaCode
+      );
+
+      out += hasLegAssoc(crit, legList, critCode);
+      out += hasProcRel(
+        crit.match(/\d{3}\.\d{2,3}\.\d{3}/g),
+        procList,
+        critCode
+      );
+
+      return prev + out;
+    }, "");
   }
 
   if (pcas.gest) {
-    counter += 1;
-    critCode = `crit_${justPcaCode}_${counter}`;
-    output += printSingleJust(
-      "CriterioJustificacaoGestionario",
-      pcas.gest,
-      critCode,
-      justPcaCode
-    );
-    output += hasLegAssoc(pcas.gest, legList, critCode);
-    output += hasProcRel(pcas.gest, procList, critCode);
+    output += pcas.gest.reduce((prev, crit) => {
+      let out;
+      counter += 1;
+      critCode = `crit_${justPcaCode}_${counter}`;
+      out += printSingleJust(
+        "CriterioJustificacaoGestionario",
+        crit,
+        critCode,
+        justPcaCode
+      );
+      out += hasLegAssoc(crit, legList, critCode);
+      out += hasProcRel(
+        crit.match(/\d{3}\.\d{2,3}\.\d{3}/g),
+        procList,
+        critCode
+      );
+
+      return prev + out;
+    }, "");
   }
 
   if (pcas.admin) {
-    counter += 1;
-    critCode = `crit_${justPcaCode}_${counter}`;
-    output += printSingleJust(
-      "CriterioJustificacaoUtilidadeAdministrativa",
-      pcas.admin,
-      critCode,
-      justPcaCode
-    );
-    output += hasLegAssoc(pcas.admin, legList, critCode);
-    output += hasProcRel(pcas.admin, procList, critCode);
+    output += pcas.admin.reduce((prev, crit) => {
+      let out;
+      counter += 1;
+      critCode = `crit_${justPcaCode}_${counter}`;
+      out += printSingleJust(
+        "CriterioJustificacaoUtilidadeAdministrativa",
+        crit,
+        critCode,
+        justPcaCode
+      );
+      out += hasLegAssoc(crit, legList, critCode);
+      out += hasProcRel(
+        crit.match(/\d{3}\.\d{2,3}\.\d{3}/g),
+        procList,
+        critCode
+      );
+
+      return prev + out;
+    }, "");
   }
   return output;
 }
@@ -194,47 +222,76 @@ export function getDfJust(data) {
 }
 
 export function printJustDF(dfs, justDfCode, legList, procList) {
-  let output = "";
+  const output = "";
   let critCode = "";
   let counter = 0;
+  let procRel = "";
 
   if (dfs.legal) {
-    counter += 1;
-    critCode = `crit_${justDfCode}_${counter}`;
-    output += printSingleJust(
-      "CriterioJustificacaoLegal",
-      dfs.legal,
-      critCode,
-      justDfCode
-    );
-    output += hasLegAssoc(dfs.legal, legList, critCode);
-    output += hasProcRel(dfs.legal, procList, critCode);
-  }
+    dfs.legal.reduce((prev, crit) => {
+      let out;
+      counter += 1;
+      critCode = `crit_${justDfCode}_${counter}`;
+      out += printSingleJust(
+        "CriterioJustificacaoLegal",
+        crit,
+        critCode,
+        justDfCode
+      );
 
-  if (dfs.dens) {
-    counter += 1;
-    critCode = `crit_${justDfCode}_${counter}`;
-    output += printSingleJust(
-      "CriterioJustificacaoDensidadeInfo",
-      dfs.dens,
-      critCode,
-      justDfCode
-    );
-    output += hasLegAssoc(dfs.dens, legList, critCode);
-    output += hasProcRel(dfs.dens, procList, critCode);
+      procRel = crit.match(/\d{3}\.\d{2,3}\.\d{3}\.\d{2}/g);
+      if (!procRel) procRel = crit.match(/\d{3}\.\d{2,3}\.\d{3}/g);
+
+      out += hasLegAssoc(crit, legList, critCode);
+      out += hasProcRel(procRel, procList, critCode);
+
+      return prev + out;
+    }, "");
   }
 
   if (dfs.comp) {
-    counter += 1;
-    critCode = `crit_${justDfCode}_${counter}`;
-    output += printSingleJust(
-      "CriterioJustificacaoComplementaridadeInfo",
-      dfs.comp,
-      critCode,
-      justDfCode
-    );
-    output += hasLegAssoc(dfs.comp, legList, critCode);
-    output += hasProcRel(dfs.comp, procList, critCode);
+    dfs.comp.reduce((prev, crit) => {
+      let out;
+      counter += 1;
+      critCode = `crit_${justDfCode}_${counter}`;
+      out += printSingleJust(
+        "CriterioJustificacaoComplementaridadeInfo",
+        crit,
+        critCode,
+        justDfCode
+      );
+
+      procRel = crit.match(/\d{3}\.\d{2,3}\.\d{3}\.\d{2}/g);
+      if (!procRel) procRel = crit.match(/\d{3}\.\d{2,3}\.\d{3}/g);
+
+      out += hasLegAssoc(crit, legList, critCode);
+      out += hasProcRel(procRel, procList, critCode);
+
+      return prev + out;
+    }, "");
   }
+
+  if (dfs.dens) {
+    dfs.dens.reduce((prev, crit) => {
+      let out;
+      counter += 1;
+      critCode = `crit_${justDfCode}_${counter}`;
+      out += printSingleJust(
+        "CriterioJustificacaoDensidadeInfo",
+        crit,
+        critCode,
+        justDfCode
+      );
+
+      procRel = crit.match(/\d{3}\.\d{2,3}\.\d{3}\.\d{2}/g);
+      if (!procRel) procRel = crit.match(/\d{3}\.\d{2,3}\.\d{3}/g);
+
+      out += hasLegAssoc(crit, legList, critCode);
+      out += hasProcRel(procRel, procList, critCode);
+
+      return prev + out;
+    }, "");
+  }
+
   return output;
 }
