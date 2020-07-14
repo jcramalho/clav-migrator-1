@@ -140,7 +140,7 @@ export function printJustPCA(pcas, justPcaCode, legList, procList) {
 
   if (pcas.legal) {
     output += pcas.legal.reduce((prev, crit) => {
-      let out;
+      let out = "";
       counter += 1;
       critCode = `crit_${justPcaCode}_${counter}`;
       out += printSingleJust(
@@ -163,7 +163,7 @@ export function printJustPCA(pcas, justPcaCode, legList, procList) {
 
   if (pcas.gest) {
     output += pcas.gest.reduce((prev, crit) => {
-      let out;
+      let out = "";
       counter += 1;
       critCode = `crit_${justPcaCode}_${counter}`;
       out += printSingleJust(
@@ -185,7 +185,7 @@ export function printJustPCA(pcas, justPcaCode, legList, procList) {
 
   if (pcas.admin) {
     output += pcas.admin.reduce((prev, crit) => {
-      let out;
+      let out = "";
       counter += 1;
       critCode = `crit_${justPcaCode}_${counter}`;
       out += printSingleJust(
@@ -222,14 +222,14 @@ export function getDfJust(data) {
 }
 
 export function printJustDF(dfs, justDfCode, legList, procList) {
-  const output = "";
+  let output = "";
   let critCode = "";
   let counter = 0;
   let procRel = "";
 
   if (dfs.legal) {
-    dfs.legal.reduce((prev, crit) => {
-      let out;
+    output += dfs.legal.reduce((prev, crit) => {
+      let out = "";
       counter += 1;
       critCode = `crit_${justDfCode}_${counter}`;
       out += printSingleJust(
@@ -240,7 +240,14 @@ export function printJustDF(dfs, justDfCode, legList, procList) {
       );
 
       procRel = crit.match(/\d{3}\.\d{2,3}\.\d{3}\.\d{2}/g);
-      if (!procRel) procRel = crit.match(/\d{3}\.\d{2,3}\.\d{3}/g);
+
+      if (!procRel) procRel = [];
+
+      const procLvl3 = crit.match(/\d{3}\.\d{2,3}\.\d{3}(?!\.)/g);
+
+      if (procLvl3) {
+        procRel = [...procRel, ...procLvl3];
+      }
 
       out += hasLegAssoc(crit, legList, critCode);
       out += hasProcRel(procRel, procList, critCode);
@@ -250,8 +257,8 @@ export function printJustDF(dfs, justDfCode, legList, procList) {
   }
 
   if (dfs.comp) {
-    dfs.comp.reduce((prev, crit) => {
-      let out;
+    output += dfs.comp.reduce((prev, crit) => {
+      let out = "";
       counter += 1;
       critCode = `crit_${justDfCode}_${counter}`;
       out += printSingleJust(
@@ -262,7 +269,14 @@ export function printJustDF(dfs, justDfCode, legList, procList) {
       );
 
       procRel = crit.match(/\d{3}\.\d{2,3}\.\d{3}\.\d{2}/g);
-      if (!procRel) procRel = crit.match(/\d{3}\.\d{2,3}\.\d{3}/g);
+
+      if (!procRel) procRel = [];
+
+      const procLvl3 = crit.match(/\d{3}\.\d{2,3}\.\d{3}(?!\.)/g);
+
+      if (procLvl3) {
+        procRel = [...procRel, ...procLvl3];
+      }
 
       out += hasLegAssoc(crit, legList, critCode);
       out += hasProcRel(procRel, procList, critCode);
@@ -272,8 +286,8 @@ export function printJustDF(dfs, justDfCode, legList, procList) {
   }
 
   if (dfs.dens) {
-    dfs.dens.reduce((prev, crit) => {
-      let out;
+    output += dfs.dens.reduce((prev, crit) => {
+      let out = "";
       counter += 1;
       critCode = `crit_${justDfCode}_${counter}`;
       out += printSingleJust(
@@ -284,7 +298,14 @@ export function printJustDF(dfs, justDfCode, legList, procList) {
       );
 
       procRel = crit.match(/\d{3}\.\d{2,3}\.\d{3}\.\d{2}/g);
-      if (!procRel) procRel = crit.match(/\d{3}\.\d{2,3}\.\d{3}/g);
+
+      if (!procRel) procRel = [];
+
+      const procLvl3 = crit.match(/\d{3}\.\d{2,3}\.\d{3}(?!\.)/g);
+
+      if (procLvl3) {
+        procRel = [...procRel, ...procLvl3];
+      }
 
       out += hasLegAssoc(crit, legList, critCode);
       out += hasProcRel(procRel, procList, critCode);
@@ -292,6 +313,5 @@ export function printJustDF(dfs, justDfCode, legList, procList) {
       return prev + out;
     }, "");
   }
-
   return output;
 }

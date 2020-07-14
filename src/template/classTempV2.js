@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-globals */
 /* eslint-disable import/extensions */
 /* eslint-disable camelcase */
 
@@ -183,7 +184,7 @@ function PrintMigraNe(classe) {
 function PrintPCAl3(classe, classes, legislacao) {
   if (classe.codigo === "400.10.001") return proc_c400_10_001(classe);
   if (classe.classe.length === 3) {
-    if (classe["Prazo de conservação administrativa"])
+    if (!isNaN(classe["Prazo de conservação administrativa"]))
       return procPCA(
         classe,
         classe.pcaCode,
@@ -208,7 +209,7 @@ function PrintPCAl4(classe, classes, legislacao) {
   if (
     classe.classe.length === 4 &&
     hasL3(classe.codigo, classes.lvl3) &&
-    classe["Prazo de conservação administrativa"]
+    !isNaN(classe["Prazo de conservação administrativa"])
   )
     return procPCA(classe, classe.pcaCode, classe.codigo, legislacao, classes);
 }

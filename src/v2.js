@@ -15,7 +15,7 @@ import classParser from "./parsers/classParser.js";
 import classTempV2 from "./template/classTempV2.js";
 
 // FIXME: Remove later
-const workbook = xlsx.readFile("./data/Frecolha-20200522.xls", {
+const workbook = xlsx.readFile("./data/test.xlsx", {
   cellDates: true,
   cellNF: false,
   cellText: false
