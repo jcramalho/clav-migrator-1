@@ -100,12 +100,11 @@ function printOwnersProc(classe, entidade, tipologia) {
   }, "");
 }
 
-function PrintRelProc(classe, report) {
+function PrintRelProc(classe) {
   classe.codProcRel.pop(); // FIXME: CORRECT THIS IN THE PARSER
   classe.tipoRelProc.pop(); // FIXME: CORRECT THIS IN THE PARSER
 
   if (classe.codProcRel.length !== classe.tipoRelProc.length) {
-    report("teste: Lengths dont match");
     return classe.codProcRel.reduce((prev, cod, index) => {
       if (index) prev += "\n";
       return `${prev}\t:temRelProc ":c${cod}" ;`;

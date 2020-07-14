@@ -60,6 +60,8 @@ const tipoTtlV2 = Migrator.read(sheetTipo, "tipologia")
   .parse(tipoParser, "tipologia")
   .convert2(tipoTempV2, "tipologia");
 
+Migrator.printLog("parsingBase.log");
+
 const classesTtlV2 = Migrator.read(sheet100, "classes")
   .read(sheet150)
   .read(sheet200)

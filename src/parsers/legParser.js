@@ -15,15 +15,21 @@ function parseEntidades({ Entidade }) {
   return [];
 }
 
-export default function legParser(data) {
+export default function legParser(data, _, report) {
+  const tipoCode = parseCode(data);
   return {
     ...data,
-    tipoCode: parseCode(data),
+    tipoCode,
     legCode: `leg_${nanoid()}`,
     sumario: data.Sumário.replace(/"/gm, '\\"').replace(/(\r\n|\n|\r)/gm, ""),
     entidadesResp: parseEntidades(data),
     estado: data.Estado ? data.Estado : "A",
-    numero: data.Número ? data.Número : ""
+    numero: data.Número
+      ? data.Número
+      : report(
+          { msg: `Legislação ${tipoCode} sem Número`, type: "parsing" },
+          ""
+        )
   };
 }
 

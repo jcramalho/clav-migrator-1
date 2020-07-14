@@ -10,11 +10,11 @@
  */
 export default function template(tipo, print) {
   print(
-    `###  http://jcr.di.uminho.pt/m51-clav#tip_${tipo.Sigla}`,
-    `\t:tip_${tipo.Sigla} rdf:type owl:NamedIndividual ,`,
+    `###  http://jcr.di.uminho.pt/m51-clav#tip_${tipo.sigla}`,
+    `\t:tip_${tipo.sigla} rdf:type owl:NamedIndividual ,`,
     `\t:TipologiaEntidade ;`,
     `\t:tipEstado "A";`,
-    `\t:tipSigla "${tipo.Sigla}";`,
+    `\t:tipSigla "${tipo.sigla}";`,
     `\t:tipDesignacao "${tipo.Designação}".`
   );
 }

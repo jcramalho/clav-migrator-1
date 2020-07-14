@@ -1,6 +1,11 @@
 import xlsx from "xlsx";
+import fs from "fs";
 
-const migrator = { data: {}, readName: "default" };
+const migrator = {
+  data: {},
+  readName: "default",
+  log: { geral: [], parsing: [], invariantes: [] }
+};
 
 migrator.read = function read(sheet, name) {
   let readName = name;
@@ -18,7 +23,7 @@ migrator.read = function read(sheet, name) {
 
 migrator.parse = function parse(parser, name) {
   this.data[name] = this.data[name].map(line =>
-    parser(line, this.data, this.report)
+    parser(line, this.data, this.report.bind(this))
   );
   return this;
 };
@@ -37,15 +42,24 @@ migrator.convert2 = function convert(template, name) {
     });
 
   this.data[name].forEach(item =>
-    template(item, print, this.report, this.data)
+    template(item, print, this.report.bind(this), this.data)
   );
+  console.log(`Foram migradas ${this.data[name].length} ${name}`);
 
   return document;
 };
 
-migrator.report = function report(msg, defaultVal = null) {
-  console.log(msg);
+migrator.report = function report({ msg, type }, defaultVal = null) {
+  this.log[type].push(msg);
   return defaultVal;
+};
+
+migrator.printLog = function printLog(outFile) {
+  const out = this.log.parsing.reduce((prev, item) => {
+    return `${prev + item}\n`;
+  }, "");
+  fs.writeFileSync(`log/${outFile}`, out);
+  this.log = { geral: [], parsing: [], invariantes: [] };
 };
 
 export default migrator;
