@@ -1,19 +1,20 @@
-export default function tipoTemp(data) {
-  let ttl = "";
-  let counter = 0;
-  ttl += data.tipologia.reduce((prev, tipologia) => {
-    counter += 1;
-    let temp = `${prev}###  http://jcr.di.uminho.pt/m51-clav#tip_${tipologia.Sigla}\n`;
-    temp += `:tip_${tipologia.Sigla} rdf:type owl:NamedIndividual ,\n`;
-    temp += `\t\t:TipologiaEntidade ;\n`;
-    temp += `\t:tipEstado "A";\n`;
-    temp += `\t:tipSigla "${tipologia.Sigla}";\n`;
-    temp += `\t:tipDesignacao "${tipologia.Designação}".\n`;
-
-    return temp;
-  }, "");
-
-  console.log(`Foram migradas ${counter} tipologias`);
-
-  return ttl;
+/**
+ * Example output [NOT REAL]:
+ *
+ * ###  http://jcr.di.uminho.pt/m51-clav#tip_AC
+ * :tip_AAGR rdf:type owl:NamedIndividual ,
+ * :TipologiaEntidade ;
+ * :tipEstado "A";
+ * :tipSigla "AAGR";
+ * :tipDesignacao "Assembleias de apuramento geral dos resultados".
+ */
+export default function template(tipo, print) {
+  print(
+    `###  http://jcr.di.uminho.pt/m51-clav#tip_${tipo.sigla}`,
+    `\t:tip_${tipo.sigla} rdf:type owl:NamedIndividual ,`,
+    `\t:TipologiaEntidade ;`,
+    `\t:tipEstado "A";`,
+    `\t:tipSigla "${tipo.sigla}";`,
+    `\t:tipDesignacao "${tipo.Designação}".`
+  );
 }

@@ -10,12 +10,12 @@ import tiTemp from "./template/tiTemp.js";
 import tipoParser from "./parsers/tipoParser.js";
 import tipoTemp from "./template/tipoTemp.js";
 import legParser from "./parsers/legParser.js";
-import legTemp from "./template/legTemp.js";
+import legTemp from "./template/legtemp.js";
 import classParser from "./parsers/classParser.js";
 import classTemp from "./template/classTemp.js";
 
 // FIXME: Remove later
-const workbook = xlsx.readFile("./data/Frecolha-20200522.xls", {
+const workbook = xlsx.readFile("./data/test.xlsx", {
   cellDates: true,
   cellNF: false,
   cellText: false
@@ -46,19 +46,21 @@ const sheet950 = workbook.Sheets["950.csv"];
 
 const entTtl = Migrator.read(sheet, "entidade")
   .parse(entParser, "entidade")
-  .convert(entTemp);
-
-const tiTtl = Migrator.read(sheetTi, "ti")
-  .parse(tiParser, "ti")
-  .convert(tiTemp);
-
-const tipoTtl = Migrator.read(sheetTipo, "tipologia")
-  .parse(tipoParser, "tipologia")
-  .convert(tipoTemp);
+  .convert2(entTemp, "entidade");
 
 const legTtl = Migrator.read(sheetLeg, "legislacao")
   .parse(legParser, "legislacao")
-  .convert(legTemp);
+  .convert2(legTemp, "legislacao");
+
+const tiTtl = Migrator.read(sheetTi, "ti")
+  .parse(tiParser, "ti")
+  .convert2(tiTemp, "ti");
+
+const tipoTtl = Migrator.read(sheetTipo, "tipologia")
+  .parse(tipoParser, "tipologia")
+  .convert2(tipoTemp, "tipologia");
+
+Migrator.printLog("parsingBase.log");
 
 const classesTtl = Migrator.read(sheet100, "classes")
   .read(sheet150)
@@ -80,10 +82,12 @@ const classesTtl = Migrator.read(sheet100, "classes")
   .read(sheet900)
   .read(sheet950)
   .parse(classParser, "classes")
-  .convert(classTemp("classes"));
+  .convert2(classTemp, "classes");
+
+Migrator.printLog("classes.log");
 
 fs.writeFileSync("data/ent.ttl", entTtl);
-fs.writeFileSync("data/ti.ttl", tiTtl);
-fs.writeFileSync("data/tipo.ttl", tipoTtl);
 fs.writeFileSync("data/leg.ttl", legTtl);
-fs.writeFileSync("data/classes.ttl", classesTtl);
+fs.writeFileSync("data/tipo.ttl", tipoTtl);
+fs.writeFileSync("data/ti.ttl", tiTtl);
+fs.writeFileSync("data/class.ttl", classesTtl);

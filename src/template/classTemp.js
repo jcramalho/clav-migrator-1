@@ -1,317 +1,308 @@
-/* eslint-disable no-use-before-define */
+/* eslint-disable no-restricted-globals */
 /* eslint-disable import/extensions */
 /* eslint-disable camelcase */
-/* eslint-disable no-param-reassign */
+
+/**
+ * Example output [NOT REAL]:
+ *
+ * ###  http://jcr.di.uminho.pt/m51-clav#c100
+ */
 import { proc_c400_10_001, printJustPCA, printJustDF } from "../helper.js";
+import invDfDistinto from "../invariantes.js";
 
-// import { proc_c400_10_001 } from "../helper";
+export default function template(
+  classe,
+  print,
+  report,
+  { entidade, tipologia, legislacao, classes }
+) {
+  if (classes.lvl3 === undefined) classes.lvl3 = [];
+  print(
+    `###  http://jcr.di.uminho.pt/m51-clav#${classe.classCod}`,
+    `:${classe.classCod} rdf:type owl:NamedIndividual ;`,
+    `\t:classeStatus "${classe.estado}";`,
+    `\trdf:type :Classe_N${classe.classe.length};`,
+    `\t:codigo "${classe.codigo}";`,
+    `\t:titulo "${classe.titulo}";`,
+    classe.classe ? "\t:pertenceLC :lc1 ;" : false,
+    printFather(classe), // :temPai :Lc1 || :temPai :c100.10
+    printTipoProc(classe), // :processoTipoVC :vc_processoTipo_pc
+    printTransversalProc(classe), // :processoTransversal "S"|"N"
+    printParticipantProc(classe, entidade, tipologia), // :temParticipanteAssessor :tip_AP ;
+    printOwnersProc(classe, entidade, tipologia),
+    PrintRelProc(classe, classes, report),
+    PrintRelLeg(classe, legislacao),
+    PrintDim(classe),
+    PrintUnif(classe),
+    `\t:descricao "${classe.descricao}".`,
+    PrintMigraNa(classe),
+    PrintMigraExNa(classe),
+    PrintMigraNe(classe),
+    PrintPCAl3(classe, classes, legislacao),
+    PrintDFl3(classe, classes, legislacao),
+    PrintPCAl4(classe, classes, legislacao),
+    PrintDFl4(classe, classes, legislacao)
+  );
+}
 
-/* eslint-disable no-nested-ternary */
-export default code => data => {
-  let ttl = "";
-  let counter = 0;
-  ttl += data[code].reduce((prev, classe) => {
-    counter += 1;
+function printFather(classe) {
+  if (classe.classe.length === 1) return "\t:temPai :lc1 ;";
+  return `\t:temPai :c${[...classe.classe.slice(0, -1)].join(".")} ;`;
+}
 
-    let temp = `${prev}###  http://jcr.di.uminho.pt/m51-clav#${classe.classCod}\n`;
-    temp += `:${classe.classCod} rdf:type owl:NamedIndividual ;\n`;
-    temp += `\t:classeStatus "${classe.estado}";\n`;
-    temp += `\trdf:type :Classe_N${classe.classe.length};\n`;
-    temp += `\t:codigo "${classe.codigo}";\n`;
-    temp += `\t:titulo "${classe.titulo}";\n`;
+// TODO: Test all functions bellow
+function printTipoProc(classe) {
+  if (classe.classe.length !== 3) return "";
+  if (classe.tipoProc === "PC" || classe.tipoProc === "PE")
+    return `\t:processoTipoVC :vc_processoTipo_${classe.tipoProc.toLowerCase()} ;`;
+  return "";
+}
 
-    if (classe.classe) {
-      temp += "\t:pertenceLC :lc1 ;\n";
-    }
+function printTransversalProc(classe) {
+  if (!classe["Processo transversal (S/N)"]) return "";
+  return `\t:processoTransversal "${classe[
+    "Processo transversal (S/N)"
+  ].trim()}" ;`;
+}
 
-    const paiClass = [...classe.classe];
+function printParticipantProc(classe, entidade, tipologia) {
+  if (classe["Processo transversal (S/N)"] === "S") {
+    const output = classe.parts.reduce((prev, part, index) => {
+      part = part.replace(/^[_]+/, "");
+      if (!part) return prev;
+      if (index) prev += "\n";
+      const prefix = getPrefix(part, entidade, tipologia);
 
-    paiClass.pop();
+      if (!classe.tiposInt[index]) return prev;
 
-    switch (classe.classe.length) {
-      case 1:
-        temp += "\t:temPai :lc1 ;\n";
-        break;
-      case 2:
-      case 3:
-      case 4:
-        temp += `\t:temPai :c${paiClass.join(".")} ;\n`;
-        break;
-      default:
-        break;
-    }
-
-    if (classe.classe.length === 3) {
-      switch (classe.tipoProc) {
-        case "PC":
-          temp += "\t:processoTipoVC :vc_processoTipo_pc ;\n";
-          break;
-        case "PE":
-          temp += "\t:processoTipoVC :vc_processoTipo_pe ;\n";
-          break;
-        default:
-          break;
-      }
-
-      if (classe["Processo transversal (S/N)"]) {
-        temp += `\t:processoTransversal "${classe["Processo transversal (S/N)"]}" ;\n`;
-        if (classe["Processo transversal (S/N)"] === "S") {
-          // Participantes do processo
-          if (classe["Participante no processo"]) {
-            classe.parts.map((part, index) => {
-              // FIXME: Mudar para parser?
-              part.replace(/^[_]+/, "");
-              if (part) {
-                const prefixo = data.entidade.filter(ent => ent.sigla === part)
-                  .length
-                  ? "ent_"
-                  : data.tipologia.filter(tip => tip.sigla === part).length
-                  ? "tip_"
-                  : false;
-                if (prefixo) {
-                  // Tipo de participação
-                  switch (classe.tiposInt[index]) {
-                    case "Apreciar":
-                      temp += `\t:temParticipanteApreciador :${prefixo}${part} ;\n`;
-                      break;
-                    case "Assessorar":
-                      temp += `\t:temParticipanteAssessor :${prefixo}${part} ;\n`;
-                      break;
-                    case "Comunicar":
-                      temp += `\t:temParticipanteComunicador :${prefixo}${part} ;\n`;
-                      break;
-                    case "Decidir":
-                      temp += `\t:temParticipanteDecisor :${prefixo}${part} ;\n`;
-                      break;
-                    case "Executar":
-                      temp += `\t:temParticipanteExecutor :${prefixo}${part} ;\n`;
-                      break;
-                    case "Iniciar":
-                      temp += `\t:temParticipanteIniciador :${prefixo}${part} ;\n`;
-                      break;
-                    default:
-                      break;
-                  }
-                }
-              }
-              return "";
-            });
-          }
-        }
-      }
-      // Donos do processo
-
-      classe.donosProc.map(dono => {
-        if (dono) {
-          const prefixo = data.entidade.filter(ent => ent.sigla === dono).length
-            ? "ent_"
-            : data.tipologia.filter(tip => tip.sigla === dono).length
-            ? "tip_"
-            : false;
-
-          temp += `\t:temDono :${prefixo}${dono} ;\n`;
-        }
-        return "";
-      });
-    }
-
-    classe.codProcRel.pop();
-    classe.tipoRelProc.pop();
-
-    // Relações com os outros processos
-    if (classe.codProcRel.length !== classe.tipoRelProc.length) {
-      classe.codProcRel.map(cod => {
-        temp += `\t:temRelProc ":c${cod}" ;\n`;
-        return "";
-      });
-    } else {
-      classe.tipoRelProc.map((tipo, index) => {
-        if (tipo.match(/S[íi]ntese[ ]*\(s[ií]ntetizad[oa]\)/gi)) {
-          temp += `\t:eSintetizadoPor :c${classe.codProcRel[index]} ;\n`;
-        } else if (tipo.match(/S[íi]ntese[ ]*\(sintetiza\)/gi)) {
-          temp += `\t:eSinteseDe :c${classe.codProcRel[index]} ;\n`;
-        } else if (tipo.startsWith("Complementar")) {
-          temp += `\t:eComplementarDe :c${classe.codProcRel[index]} ;\n`;
-        } else if (tipo.match(/\s*Cruzad/gi)) {
-          temp += `\t:eCruzadoCom :c${classe.codProcRel[index]} ;\n`;
-        } else if (tipo.match(/\s*Suplement.?\s*de/)) {
-          temp += `\t:eSuplementoDe :c${classe.codProcRel[index]} ;\n`;
-        } else if (tipo.match(/\s*Suplement.?\s*para/)) {
-          temp += `\t:eSuplementoPara :c${classe.codProcRel[index]} ;\n`;
-        } else if (tipo.match(/Sucessão[ ]*\(suce/gi)) {
-          temp += `\t:eSucessorDe :c${classe.codProcRel[index]} ;\n`;
-        } else if (tipo.match(/\s*Sucessão\s*\(antece/gi)) {
-          temp += `\t:eAntecessorDe :c${classe.codProcRel[index]} ;\n`;
-        } else {
-          temp += `\t:temRelProc :c${classe.codProcRel[index]} ;\n`;
-        }
-
-        return "";
-      });
-    }
-
-    // Relações com a legislação
-    classe.diplomas.map(diploma => {
-      diploma.trim();
-      const index = data.legislacao.findIndex(leg => leg.tipoCode === diploma);
-      if (index > -1) {
-        temp += `\t:temLegislacao :${data.legislacao[index].legCode} ;\n`;
-      }
-      return "";
-    });
-
-    if (classe.classe.length > 2) {
-      // Dimensão qualitativa do processo
-      if (classe.dimQual.match(/Elevada|Reduzida|Média/i))
-        temp += `\t:processoDimQual "${classe.dimQual}" ;\n`;
-      // Uniformização do processo
-      if (classe.unifProc.match(/S|N/i)) {
-        temp += `\t:processoUniform "${classe.unifProc}" ;\n`;
-      }
-    }
-
-    temp += `\t:descricao "${classe.descricao}".\n`;
-
-    // MigraNA
-    classe.naList.pop();
-
-    temp += classe.naList.reduce((prevNa, na) => {
-      let out = `${prevNa}###  http://jcr.di.uminho.pt/m51-clav#${na.id}\n`;
-      out += `:${na.id} rdf:type owl:NamedIndividual ,\n`;
-      out += "\t\t:NotaAplicacao ;\n";
-      out += '\t:rdfs:label "Nota de Aplicação";\n';
-      out += `\t:conteudo "${na.conteudo}".\n\n`;
-      // criar as relações com das notas de aplicação com a classe
-      out += `:${classe.classCod} :temNotaAplicacao :${na.id} .\n`;
-      return out;
+      return `${prev}\t:temParticipante${
+        {
+          Apreciar: "Apreciador",
+          Assessorar: "Assessor",
+          Comunicar: "Comunicador",
+          Decidir: "Decisor",
+          Executar: "Executor",
+          Iniciar: "Iniciador"
+        }[classe.tiposInt[index]]
+      } :${prefix}${part} ; `;
     }, "");
+    return output;
+  }
+  return "";
+}
 
-    // MigraExNA
+function printOwnersProc(classe, entidade, tipologia) {
+  return classe.donosProc.reduce((prev, dono, index) => {
+    if (!dono) return prev;
+    if (index) prev += "\n";
+    const prefix = getPrefix(dono, entidade, tipologia);
 
-    classe.exNaList.pop();
-
-    temp += classe.exNaList.reduce((prevExNa, exNa) => {
-      let out = `${prevExNa}###  http://jcr.di.uminho.pt/m51-clav#${exNa.id}\n`;
-      out += `:${exNa.id} rdf:type owl:NamedIndividual ,\n`;
-      out += "\t:ExemploNotaAplicacao ;\n";
-      out += '\t:rdfs:label "Exemplo de nota de aplicação";\n';
-      out += `\t:conteudo "${exNa.conteudo}".\n\n`;
-      // criar as relações com dos exemplos das notas de aplicação com a classe
-      out += `:${classe.classCod} :temExemploNA :${exNa.id} .\n`;
-      return out;
-    }, "");
-
-    // MigraNE
-
-    classe.neList.pop();
-
-    temp += classe.neList.reduce((prevNe, ne) => {
-      let out = `${prevNe}###  http://jcr.di.uminho.pt/m51-clav#${ne.id}\n`;
-      out += `:${ne.id} rdf:type owl:NamedIndividual ,\n`;
-      out += "\t:NotaExclusao ;\n";
-      out += '\t:rdfs:label "Nota de Exclusão";\n';
-      out += `\t:conteudo "${ne.conteudo}".\n\n`;
-      // criar as relações com das notas de exclusão com a classe
-      out += `:${classe.classCod} :temNotaExclusao :${ne.id} .\n`;
-
-      return out;
-    }, "");
-
-    // TODO:
-    if (!Array.isArray(data.classesLvl3)) {
-      data.classesLvl3 = [];
-    }
-
-    if (classe.codigo === "400.10.001") {
-      temp += proc_c400_10_001(classe);
-    } else if (classe.classe.length === 3) {
-      if (classe["Prazo de conservação administrativa"]) {
-        temp += procPCA(
-          classe,
-          classe.pcaCode,
-          classe.codigo,
-          data.legislacao,
-          data.classes
-        );
-      } else if (!(classe.codigo in data.classesLvl3)) {
-        // Registar a classe para tratar o nível 4
-        data.classesLvl3.push(classe.codigo);
-      }
-      if (classe["Destino final"]) {
-        temp += procDF(
-          classe,
-          classe.dfCode,
-          classe.codigo,
-          data.legislacao,
-          data.classes
-        );
-      } else if (!(classe.codigo in data.classesLvl3)) {
-        // Registar a classe para tratar o nível 4
-        data.classesLvl3.push(classe.codigo);
-      }
-    } else if (classe.classe.length === 4) {
-      const sep = classe.codigo.lastIndexOf(".");
-      const pai = classe.codigo.slice(0, sep);
-      const index = data.classesLvl3.indexOf(pai);
-      if (index > -1) {
-        if (classe["Prazo de conservação administrativa"]) {
-          temp += procPCA(
-            classe,
-            classe.pcaCode,
-            classe.codigo,
-            data.legislacao,
-            data.classes
-          );
-        }
-        if (classe["Destino final"]) {
-          temp += procDF(
-            classe,
-            classe.dfCode,
-            classe.codigo,
-            data.legislacao,
-            data.classes
-          );
-        }
-        /*
-        else if(jsonObj['Nota ao PCA']){
-          console.error('WARN: PCA descrito em nota: ' + cod)
-        }
-        */
-      }
-    }
-
-    if (!Array.isArray(data.indClasses)) {
-      data.indClasses = [];
-    }
-    data.indClasses.push(classe.codigo);
-
-    return temp;
+    return `${prev}\t:temDono :${prefix}${dono} ;`;
   }, "");
+}
 
-  console.log(`Foram migradas ${counter} classes`);
+function PrintRelProc(classe, classes, report) {
+  classe.codProcRel.pop(); // FIXME: CORRECT THIS IN THE PARSER
+  classe.tipoRelProc.pop(); // FIXME: CORRECT THIS IN THE PARSER
 
-  return ttl;
-};
+  const out = invDfDistinto(classe, classes);
 
-// Migração do PCA_____________________________________________________________
+  if (classe.codProcRel.length !== classe.tipoRelProc.length) {
+    report(
+      {
+        msg: `Os processos relacionados e os tipos de relação da classe ${classe.codigo} tem diferentes comprimentos`,
+        type: "invariantes"
+      },
+      ""
+    );
+    return (
+      out +
+      classe.codProcRel.reduce((prev, cod, index) => {
+        if (index) prev += "\n";
+        return `${prev}\t:temRelProc ":c${cod}" ;`;
+      }, "")
+    );
+  }
+
+  return (
+    out +
+    classe.tipoRelProc.reduce((prev, tipo, index) => {
+      if (index) prev += "\n";
+      return `${prev}\t:${getRelProc(tipo)} :c${classe.codProcRel[index]} ;`;
+    }, "")
+  );
+}
+
+function PrintRelLeg(classe, legislacao) {
+  return classe.diplomas.reduce((prev, diploma, index) => {
+    diploma.trim();
+    const tipLoc = legislacao.findIndex(({ tipoCode }) => tipoCode === diploma);
+    if (tipLoc > -1) {
+      if (index) prev += "\n";
+      return `${prev}\t:temLegislacao :${legislacao[index].legCode} ;`;
+    }
+    return prev;
+  }, "");
+}
+
+function PrintDim(classe) {
+  if (
+    classe.classe.length > 2 &&
+    classe.dimQual.match(/Elevada|Reduzida|Média/i)
+  )
+    return `\t:processoDimQual "${classe.dimQual}" ;`;
+}
+
+function PrintUnif(classe) {
+  if (classe.classe.length > 2 && classe.unifProc.match(/S|N/i))
+    return `\t:processoUniform "${classe.unifProc}" ;`;
+}
+
+function PrintMigraNa(classe) {
+  // classe.naList.pop();
+  const migraNa = MigraBuilder(
+    "NotaAplicacao",
+    "Nota de Aplicação",
+    "temNotaAplicacao"
+  );
+  return classe.naList.reduce((prev, na, index) => {
+    if (index) prev += "\n";
+    return `${prev}${migraNa(na.id, na.conteudo, classe.classCod)}`;
+  }, "");
+}
+
+function PrintMigraExNa(classe) {
+  // classe.exNaList.pop();
+  const migraExNa = MigraBuilder(
+    "ExemploNotaAplicacao",
+    "Exemplo de nota de aplicação",
+    "temExemploNA"
+  );
+  return classe.exNaList.reduce((prev, exNa, index) => {
+    if (index) prev += "\n";
+    return `${prev}${migraExNa(exNa.id, exNa.conteudo, classe.classCod)}`;
+  }, "");
+}
+
+function PrintMigraNe(classe) {
+  // classe.neList.pop();
+  const migraNe = MigraBuilder(
+    "NotaExclusao",
+    "Nota de Exclusão",
+    "temNotaExclusao"
+  );
+  return classe.neList.reduce((prev, ne, index) => {
+    if (index) prev += "\n";
+    return `${prev}${migraNe(ne.id, ne.conteudo, classe.classCod)}`;
+  }, "");
+}
+
+function PrintPCAl3(classe, classes, legislacao) {
+  if (classe.codigo === "400.10.001") return proc_c400_10_001(classe);
+  if (classe.classe.length === 3) {
+    if (!isNaN(classe["Prazo de conservação administrativa"]))
+      return procPCA(
+        classe,
+        classe.pcaCode,
+        classe.codigo,
+        legislacao,
+        classes
+      );
+    if (!(classe.codigo in classes.lvl3)) classes.lvl3.push(classe.codigo);
+  }
+}
+
+function PrintDFl3(classe, classes, legislacao) {
+  if (classe.codigo === "400.10.001") return "";
+  if (classe.classe.length === 3) {
+    if (classe["Destino final"])
+      return procDF(classe, classe.dfCode, classe.codigo, legislacao, classes);
+    if (!(classe.codigo in classes.lvl3)) classes.lvl3.push(classe.codigo);
+  }
+}
+
+function PrintPCAl4(classe, classes, legislacao) {
+  if (
+    classe.classe.length === 4 &&
+    hasL3(classe.codigo, classes.lvl3) &&
+    !isNaN(classe["Prazo de conservação administrativa"])
+  )
+    return procPCA(classe, classe.pcaCode, classe.codigo, legislacao, classes);
+}
+
+function PrintDFl4(classe, classes, legislacao) {
+  if (
+    classe.classe.length === 4 &&
+    hasL3(classe.codigo, classes.lvl3) &&
+    classe["Destino final"]
+  )
+    return procDF(classe, classe.dfCode, classe.codigo, legislacao, classes);
+}
+
+/**
+ *
+ * HELPER FUNCTIONS BELLOW
+ *
+ */
+
+function hasL3(code, l3List) {
+  const sep = code.lastIndexOf(".");
+  const father = code.slice(0, sep);
+  return l3List.indexOf(father) > -1;
+}
+
+function MigraBuilder(note, label, hasNote) {
+  return (id, content, code) => {
+    let out = `###  http://jcr.di.uminho.pt/m51-clav#${id}\n`;
+    out += `:${id} rdf:type owl:NamedIndividual ,\n`;
+    out += `\t\t:${note} ;\n`;
+    out += `\t:rdfs:label "${label}";\n`;
+    out += `\t:conteudo "${content}".\n\n`;
+    out += `:${code} :${hasNote} :${id} .`;
+    return out;
+  };
+}
+
+function getRelProc(tipo) {
+  if (tipo.match(/S[íi]ntese[ ]*\(s[ií]ntetizad[oa]\)/gi))
+    return "eSintetizadoPor";
+  if (tipo.match(/S[íi]ntese[ ]*\(sintetiza\)/gi)) return "eSinteseDe";
+  if (tipo.startsWith("Complementar")) return "eComplementarDe";
+  if (tipo.match(/\s*Cruzad/gi)) return "eCruzadoCom";
+  if (tipo.match(/\s*Suplement.?\s*de/)) return "eSuplementoDe";
+  if (tipo.match(/\s*Suplement.?\s*para/)) return "eSuplementoPara";
+  if (tipo.match(/Sucessão[ ]*\(suce/gi)) return "eSucessorDe";
+  if (tipo.match(/\s*Sucessão\s*\(antece/gi)) return "eAntecessorDe";
+  return "temRelProc";
+}
+
+function getPrefix(part, entidade, tipologia) {
+  if (hasPart(part, entidade)) return "ent_";
+  if (hasPart(part, tipologia)) return "tip_";
+  return false;
+}
+
+function hasPart(part, arr) {
+  return arr.findIndex(({ sigla }) => sigla === part) > -1;
+}
 
 function procPCA(data, pcaCode, cod, leg, classes) {
-  let myTriples = `###  http://jcr.di.uminho.pt/m51-clav#${pcaCode}\n`;
-  myTriples += `:${pcaCode} rdf:type owl:NamedIndividual ,\n`;
-  myTriples += "\t:PCA .\n";
+  let out = `###  http://jcr.di.uminho.pt/m51-clav#${pcaCode}\n`;
+  out += `:${pcaCode} rdf:type owl:NamedIndividual ,\n`;
+  out += "\t:PCA .\n";
 
   const regex = RegExp("[]*[0-9]+[]*");
   if (regex.test(data["Prazo de conservação administrativa"])) {
-    myTriples += `:${pcaCode} :pcaValor ${data["Prazo de conservação administrativa"]}.\n`;
+    out += `:${pcaCode} :pcaValor ${data["Prazo de conservação administrativa"]}.\n`;
   }
 
   if (data["Nota ao PCA"] && data["Nota ao PCA"].trim() !== "") {
-    myTriples +=
+    out +=
       `:${pcaCode} :pcaNota ` +
       `"${data["Nota ao PCA"].replace(/"/g, '\\"').replace(/\n/g, " ")}".\n\n`;
   }
 
-  myTriples += `:c${cod} :temPCA :${pcaCode}.\n`;
+  out += `:c${cod} :temPCA :${pcaCode}.\n`;
 
   const myContagem = data["Forma de contagem do PCA"];
   if (myContagem) {
@@ -324,99 +315,95 @@ function procPCA(data, pcaCode, cod, leg, classes) {
     const re_fc_emiTit = /emissão.*título/;
 
     if (re_fc_concProc.test(myContagem)) {
-      myTriples += `:${pcaCode} :pcaFormaContagemNormalizada :vc_pcaFormaContagem_conclusaoProcedimento .\n`;
+      out += `:${pcaCode} :pcaFormaContagemNormalizada :vc_pcaFormaContagem_conclusaoProcedimento .\n`;
     } else if (re_fc_dispLeg.test(myContagem)) {
-      myTriples += `:${pcaCode} :pcaFormaContagemNormalizada :vc_pcaFormaContagem_disposicaoLegal .\n`;
+      out += `:${pcaCode} :pcaFormaContagemNormalizada :vc_pcaFormaContagem_disposicaoLegal .\n`;
 
       const linhasSubforma = myContagem.split("\n");
       linhasSubforma.splice(0, 1);
       const mySubforma = linhasSubforma.join("\n");
       if (mySubforma.trim().startsWith("10", 0)) {
-        myTriples += `:${pcaCode} :pcaSubformaContagem :vc_pcaSubformaContagem_F01.10 .\n`;
+        out += `:${pcaCode} :pcaSubformaContagem :vc_pcaSubformaContagem_F01.10 .\n`;
       } else if (mySubforma.trim().startsWith("11", 0)) {
-        myTriples += `:${pcaCode} :pcaSubformaContagem :vc_pcaSubformaContagem_F01.11 .\n`;
+        out += `:${pcaCode} :pcaSubformaContagem :vc_pcaSubformaContagem_F01.11 .\n`;
       } else if (mySubforma.trim().startsWith("12", 0)) {
-        myTriples += `:${pcaCode} :pcaSubformaContagem :vc_pcaSubformaContagem_F01.12 .\n`;
+        out += `:${pcaCode} :pcaSubformaContagem :vc_pcaSubformaContagem_F01.12 .\n`;
       } else if (mySubforma.trim().startsWith("1", 0)) {
-        myTriples += `:${pcaCode} :pcaSubformaContagem :vc_pcaSubformaContagem_F01.01 .\n`;
+        out += `:${pcaCode} :pcaSubformaContagem :vc_pcaSubformaContagem_F01.01 .\n`;
       } else if (mySubforma.trim().startsWith("2", 0)) {
-        myTriples += `:${pcaCode} :pcaSubformaContagem :vc_pcaSubformaContagem_F01.02 .\n`;
+        out += `:${pcaCode} :pcaSubformaContagem :vc_pcaSubformaContagem_F01.02 .\n`;
       } else if (mySubforma.trim().startsWith("3", 0)) {
-        myTriples += `:${pcaCode} :pcaSubformaContagem :vc_pcaSubformaContagem_F01.03 .\n`;
+        out += `:${pcaCode} :pcaSubformaContagem :vc_pcaSubformaContagem_F01.03 .\n`;
       } else if (mySubforma.trim().startsWith("4", 0)) {
-        myTriples += `:${pcaCode} :pcaSubformaContagem :vc_pcaSubformaContagem_F01.04 .\n`;
+        out += `:${pcaCode} :pcaSubformaContagem :vc_pcaSubformaContagem_F01.04 .\n`;
       } else if (mySubforma.trim().startsWith("5", 0)) {
-        myTriples += `:${pcaCode} :pcaSubformaContagem :vc_pcaSubformaContagem_F01.05 .\n`;
+        out += `:${pcaCode} :pcaSubformaContagem :vc_pcaSubformaContagem_F01.05 .\n`;
       } else if (mySubforma.trim().startsWith("6", 0)) {
-        myTriples += `:${pcaCode} :pcaSubformaContagem :vc_pcaSubformaContagem_F01.06 .\n`;
+        out += `:${pcaCode} :pcaSubformaContagem :vc_pcaSubformaContagem_F01.06 .\n`;
       } else if (mySubforma.trim().startsWith("7", 0)) {
-        myTriples += `:${pcaCode} :pcaSubformaContagem :vc_pcaSubformaContagem_F01.07 .\n`;
+        out += `:${pcaCode} :pcaSubformaContagem :vc_pcaSubformaContagem_F01.07 .\n`;
       } else if (mySubforma.trim().startsWith("8", 0)) {
-        myTriples += `:${pcaCode} :pcaSubformaContagem :vc_pcaSubformaContagem_F01.08 .\n`;
+        out += `:${pcaCode} :pcaSubformaContagem :vc_pcaSubformaContagem_F01.08 .\n`;
       } else if (mySubforma.trim().startsWith("9", 0)) {
-        myTriples += `:${pcaCode} :pcaSubformaContagem :vc_pcaSubformaContagem_F01.09 .\n`;
+        out += `:${pcaCode} :pcaSubformaContagem :vc_pcaSubformaContagem_F01.09 .\n`;
       } else {
-        console.log(
-          `ERRO: Subforma de contagem inválida: ${mySubforma} em ${pcaCode}`
-        );
+        // console.log(
+        //   `ERRO: Subforma de contagem inválida: ${mySubforma} em ${pcaCode}`
+        // );
       }
     } else if (re_fc_extEnt.test(myContagem)) {
-      myTriples += `:${pcaCode} :pcaFormaContagemNormalizada :vc_pcaFormaContagem_extincaoEntidade .\n`;
+      out += `:${pcaCode} :pcaFormaContagemNormalizada :vc_pcaFormaContagem_extincaoEntidade .\n`;
     } else if (re_fc_extDir.test(myContagem)) {
-      myTriples += `:${pcaCode} :pcaFormaContagemNormalizada :vc_pcaFormaContagem_extincaoDireito .\n`;
+      out += `:${pcaCode} :pcaFormaContagemNormalizada :vc_pcaFormaContagem_extincaoDireito .\n`;
     } else if (re_fc_cessVig.test(myContagem)) {
-      myTriples += `:${pcaCode} :pcaFormaContagemNormalizada :vc_pcaFormaContagem_cessacaoVigencia .\n`;
+      out += `:${pcaCode} :pcaFormaContagemNormalizada :vc_pcaFormaContagem_cessacaoVigencia .\n`;
     } else if (re_fc_inicProc.test(myContagem)) {
-      myTriples += `:${pcaCode} :pcaFormaContagemNormalizada :vc_pcaFormaContagem_inicioProcedimento .\n`;
+      out += `:${pcaCode} :pcaFormaContagemNormalizada :vc_pcaFormaContagem_inicioProcedimento .\n`;
     } else if (re_fc_emiTit.test(myContagem)) {
-      myTriples += `:${pcaCode} :pcaFormaContagemNormalizada :vc_pcaFormaContagem_emissaoTitulo .\n`;
+      out += `:${pcaCode} :pcaFormaContagemNormalizada :vc_pcaFormaContagem_emissaoTitulo .\n`;
     } else {
-      console.log(
-        `ERRO: Forma de contagem inválida: ${myContagem} em ${pcaCode}`
-      );
+      // console.log(
+      //   `ERRO: Forma de contagem inválida: ${myContagem} em ${pcaCode}`
+      // );
     }
   }
 
   if (data["Justificação PCA"]) {
-    myTriples += `###  http://jcr.di.uminho.pt/m51-clav#${data.justPcaCode}\n`;
-    myTriples += `:${data.justPcaCode} rdf:type owl:NamedIndividual ,\n`;
-    myTriples += "\t:JustificacaoPCA.\n";
-    myTriples += `:${pcaCode} :temJustificacao :${data.justPcaCode}.\n`;
+    out += `###  http://jcr.di.uminho.pt/m51-clav#${data.justPcaCode}\n`;
+    out += `:${data.justPcaCode} rdf:type owl:NamedIndividual ,\n`;
+    out += "\t:JustificacaoPCA.\n";
+    out += `:${pcaCode} :temJustificacao :${data.justPcaCode}.\n`;
 
-    myTriples += printJustPCA(data.pcaJust, data.justPcaCode, leg, classes);
+    out += printJustPCA(data.pcaJust, data.justPcaCode, leg, classes);
   }
 
-  return myTriples;
+  return out;
 }
 
-// Migração do DF_____________________________________________________________
-
 function procDF(data, dfCode, cod, leg, classes) {
-  let myTriples = `###  http://jcr.di.uminho.pt/m51-clav#${dfCode}\n`;
-  myTriples += `:${dfCode} rdf:type owl:NamedIndividual ,\n`;
-  myTriples += "\t:DestinoFinal";
-  myTriples += ` ;\n\t:dfValor "${data["Destino final"].replace(
-    /(\r\n|\n|\r)/gm,
-    ""
-  )}"`;
+  let out = `###  http://jcr.di.uminho.pt/m51-clav#${dfCode}\n`;
+  out += `:${dfCode} rdf:type owl:NamedIndividual ,\n`;
+  out += "\t:DestinoFinal";
+  out += ` ;\n\t:dfValor "${data["Destino final"]
+    .trim()
+    .replace(/(\r\n|\n|\r)/gm, "")}"`;
   if (data["Nota ao DF"]) {
-    myTriples += `;\n\t:dfNota "${data["Nota ao DF"].replace(
-      /(\r\n|\n|\r)/gm,
-      ""
-    )}".\n`;
+    out += `;\n\t:dfNota "${data["Nota ao DF"]
+      .trim()
+      .replace(/(\r\n|\n|\r)/gm, "")}".\n`;
   } else {
-    myTriples += ".\n";
+    out += ".\n";
   }
 
-  myTriples += `:c${cod} :temDF :${dfCode}.\n`;
+  out += `:c${cod} :temDF :${dfCode}.\n`;
 
   if (data["Justificação DF"]) {
-    myTriples += `###  http://jcr.di.uminho.pt/m51-clav#${data.justDfCode}\n`;
-    myTriples += `:${data.justDfCode} rdf:type owl:NamedIndividual ,\n`;
-    myTriples += "\t:JustificacaoDF.\n";
+    out += `###  http://jcr.di.uminho.pt/m51-clav#${data.justDfCode}\n`;
+    out += `:${data.justDfCode} rdf:type owl:NamedIndividual ,\n`;
+    out += "\t:JustificacaoDF.\n";
 
-    myTriples += `:${dfCode} :temJustificacao :${data.justDfCode}.\n`;
-    myTriples += printJustDF(data.dfJust, data.justDfCode, leg, classes);
+    out += `:${dfCode} :temJustificacao :${data.justDfCode}.\n`;
+    out += printJustDF(data.dfJust, data.justDfCode, leg, classes);
   }
-  return myTriples;
+  return out;
 }

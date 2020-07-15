@@ -44,6 +44,7 @@ migrator.convert2 = function convert(template, name) {
   this.data[name].forEach(item =>
     template(item, print, this.report.bind(this), this.data)
   );
+  // eslint-disable-next-line no-console
   console.log(`Foram migradas ${this.data[name].length} ${name}`);
 
   return document;

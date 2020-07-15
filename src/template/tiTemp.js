@@ -1,20 +1,22 @@
-export default function tiTemp(data) {
-  let ttl = "";
-  let counter = 0;
-  ttl += data.ti.reduce((prev, ti) => {
-    counter += 1;
-    let temp = `${prev}###  http://jcr.di.uminho.pt/m51-clav#${ti.tiCode}\n`;
-    temp += `:${ti.tiCode} rdf:type owl:NamedIndividual ,\n`;
-    temp += `\t:TermoIndice ;\n`;
-    temp += `\trdfs:label "TI: ${ti.termo}";\n`;
-    temp += `\t:estaAssocClasse :${ti.classCode};\n`;
-    temp += `\t:estado "A";\n`;
-    temp += `\t:termo "${ti.termo}".\n`;
-
-    return temp;
-  }, "");
-
-  console.log(`Foram migradas ${counter} termos-índice`);
-
-  return ttl;
+/**
+ * Example output [NOT REAL]:
+ *
+ * ###  http://jcr.di.uminho.pt/m51-clav#ti_9_m1NIOuma8tisqbwvYyZ
+ * :ti_9_m1NIOuma8tisqbwvYyZ rdf:type owl:NamedIndividual ,
+ * :TermoIndice ;
+ * rdfs:label "TI: Ato legislativo (produção e comunicação)";
+ * :estaAssocClasse :c100.10.001;
+ * :tipDesignacao "Assembleias de apuramento geral dos resultados".
+ * :termo "Ato legislativo (produção e comunicação)".
+ */
+export default function template(ti, print) {
+  print(
+    `###  http://jcr.di.uminho.pt/m51-clav#${ti.tiCode}`,
+    `:${ti.tiCode} rdf:type owl:NamedIndividual ,`,
+    `\t:TermoIndice ;`,
+    `\trdfs:label "TI: ${ti.termo}";`,
+    `\t:estaAssocClasse :${ti.classCode};`,
+    `\t:estado "A";`,
+    `\t:termo "${ti.termo}".`
+  );
 }
