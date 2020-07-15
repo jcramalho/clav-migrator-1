@@ -55,10 +55,14 @@ migrator.report = function report({ msg, type }, defaultVal = null) {
 };
 
 migrator.printLog = function printLog(outFile) {
-  const out = this.log.parsing.reduce((prev, item) => {
-    return `${prev + item}\n`;
+  const parse = this.log.parsing.reduce((prev, item) => {
+    return `${prev} parsing: ${item}\n`;
   }, "");
-  fs.writeFileSync(`log/${outFile}`, out);
+  const inv = this.log.invariantes.reduce((prev, item) => {
+    return `${prev} invariantes: ${item}\n`;
+  }, "");
+  fs.writeFileSync(`log/${outFile}`, parse + inv);
+
   this.log = { geral: [], parsing: [], invariantes: [] };
 };
 

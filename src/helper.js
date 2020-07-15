@@ -1,9 +1,9 @@
 /* eslint-disable camelcase */
-export function getEstado(estado) {
+export function getEstado(estado, codigo, report) {
   if (estado === undefined || estado.trim() === "") return "A";
   if (/[hH][aA][rR][mM][oO][nN]/.test(estado)) return "H";
   if (/[iI][nN][Aa][tT][iI][vV]/.test(estado)) return "I";
-  return "";
+  return report({ msg: `Classe ${codigo} sem Estado`, type: "parsing" }, "");
 }
 
 export function getClasse(cod) {
@@ -68,12 +68,19 @@ export function proc_c400_10_001(classe) {
 // Migração JUSTIFICACOES______________________________________
 // Auxiliares
 
-function getJustification(name, text) {
+function getJustification(name, text, codigo, report) {
   const cleanTxt = text.replace(/(\r\n|\n|\r)/gm, "");
   const lexRegex = new RegExp(`#${name}:[^#]+`, "g");
   const result = cleanTxt.match(lexRegex);
 
-  if (!result) return false;
+  if (!result)
+    return report(
+      {
+        msg: `Justificação do PCA/DF da classe ${codigo} não tem ${name}`,
+        type: "parsing"
+      },
+      false
+    );
 
   result.forEach(res => res.replace(`#${name}:`, "").replace(/"/g, '\\"'));
 
@@ -84,7 +91,7 @@ function printSingleJust(criteria, content, critCode, justCode) {
   let output = "";
   output += `:${critCode} rdf:type owl:NamedIndividual ,\n`;
   output += `\t:${criteria};\n`;
-  output += `\t:conteudo "${content}".\n`;
+  output += `\t:conteudo "${content.replace(/"/gm, '\\"')}".\n`;
   output += `:${justCode} :temCriterio :${critCode}.\n`;
   return output;
 }
@@ -124,12 +131,21 @@ function hasProcRel(procRel, procList, critCode) {
 
 // ------ Migra JustPCA-----
 
-export function getPcaJust(data) {
-  if (!data) return false;
+export function getPcaJust(data, codigo, report) {
+  if (!data)
+    return report(
+      { msg: `Classe ${codigo} sem Justificação PCA`, type: "parsing" },
+      false
+    );
 
-  const legal = getJustification("Critério legal", data);
-  const gest = getJustification("Critério gestionário", data);
-  const admin = getJustification("Critério de utilidade administrativa", data);
+  const legal = getJustification("Critério legal", data, codigo, report);
+  const gest = getJustification("Critério gestionário", data, codigo, report);
+  const admin = getJustification(
+    "Critério de utilidade administrativa",
+    data,
+    codigo,
+    report
+  );
   return { legal, gest, admin };
 }
 
@@ -209,14 +225,25 @@ export function printJustPCA(pcas, justPcaCode, legList, procList) {
 
 // ------ Migra JustDF-----
 
-export function getDfJust(data) {
-  if (!data) return false;
+export function getDfJust(data, codigo, report) {
+  if (!data)
+    return report(
+      { msg: `Classe ${codigo} sem Justificação DF`, type: "parsing" },
+      false
+    );
 
-  const legal = getJustification("Critério legal", data);
-  const dens = getJustification("Critério de densidade informacional", data);
+  const legal = getJustification("Critério legal", data, codigo, report);
+  const dens = getJustification(
+    "Critério de densidade informacional",
+    data,
+    codigo,
+    report
+  );
   const comp = getJustification(
     "Critério de complementaridade informacional",
-    data
+    data,
+    codigo,
+    report
   );
   return { legal, dens, comp };
 }

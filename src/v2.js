@@ -84,6 +84,8 @@ const classesTtlV2 = Migrator.read(sheet100, "classes")
   .parse(classParser, "classes")
   .convert2(classTempV2, "classes");
 
+Migrator.printLog("classes.log");
+
 fs.writeFileSync("data/entV2.ttl", entTtlV2);
 fs.writeFileSync("data/legV2.ttl", legTtlV2);
 fs.writeFileSync("data/tipoV2.ttl", tipoTtlV2);

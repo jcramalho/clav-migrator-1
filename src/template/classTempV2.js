@@ -8,6 +8,7 @@
  * ###  http://jcr.di.uminho.pt/m51-clav#c100
  */
 import { proc_c400_10_001, printJustPCA, printJustDF } from "../helper.js";
+import invDfDistinto from "../invariantes.js";
 
 export default function template(
   classe,
@@ -29,7 +30,7 @@ export default function template(
     printTransversalProc(classe), // :processoTransversal "S"|"N"
     printParticipantProc(classe, entidade, tipologia), // :temParticipanteAssessor :tip_AP ;
     printOwnersProc(classe, entidade, tipologia),
-    PrintRelProc(classe, report),
+    PrintRelProc(classe, classes, report),
     PrintRelLeg(classe, legislacao),
     PrintDim(classe),
     PrintUnif(classe),
@@ -100,20 +101,36 @@ function printOwnersProc(classe, entidade, tipologia) {
   }, "");
 }
 
-function PrintRelProc(classe) {
+function PrintRelProc(classe, classes, report) {
   classe.codProcRel.pop(); // FIXME: CORRECT THIS IN THE PARSER
   classe.tipoRelProc.pop(); // FIXME: CORRECT THIS IN THE PARSER
 
+  const out = invDfDistinto(classe, classes);
+
   if (classe.codProcRel.length !== classe.tipoRelProc.length) {
-    return classe.codProcRel.reduce((prev, cod, index) => {
-      if (index) prev += "\n";
-      return `${prev}\t:temRelProc ":c${cod}" ;`;
-    }, "");
+    report(
+      {
+        msg: `Os processos relacionados e os tipos de relação da classe ${classe.codigo} tem diferentes comprimentos`,
+        type: "invariantes"
+      },
+      ""
+    );
+    return (
+      out +
+      classe.codProcRel.reduce((prev, cod, index) => {
+        if (index) prev += "\n";
+        return `${prev}\t:temRelProc ":c${cod}" ;`;
+      }, "")
+    );
   }
-  return classe.tipoRelProc.reduce((prev, tipo, index) => {
-    if (index) prev += "\n";
-    return `${prev}\t:${getRelProc(tipo)} :c${classe.codProcRel[index]} ;`;
-  }, "");
+
+  return (
+    out +
+    classe.tipoRelProc.reduce((prev, tipo, index) => {
+      if (index) prev += "\n";
+      return `${prev}\t:${getRelProc(tipo)} :c${classe.codProcRel[index]} ;`;
+    }, "")
+  );
 }
 
 function PrintRelLeg(classe, legislacao) {
