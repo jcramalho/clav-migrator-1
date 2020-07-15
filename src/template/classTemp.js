@@ -50,7 +50,6 @@ function printFather(classe) {
   return `\t:temPai :c${[...classe.classe.slice(0, -1)].join(".")} ;`;
 }
 
-// TODO: Test all functions bellow
 function printTipoProc(classe) {
   if (classe.classe.length !== 3) return "";
   if (classe.tipoProc === "PC" || classe.tipoProc === "PE")
@@ -102,8 +101,8 @@ function printOwnersProc(classe, entidade, tipologia) {
 }
 
 function PrintRelProc(classe, classes, report) {
-  classe.codProcRel.pop(); // FIXME: CORRECT THIS IN THE PARSER
-  classe.tipoRelProc.pop(); // FIXME: CORRECT THIS IN THE PARSER
+  classe.codProcRel.pop();
+  classe.tipoRelProc.pop();
 
   const out = invDfDistinto(classe, classes);
 
@@ -172,7 +171,6 @@ function PrintMigraNa(classe) {
 }
 
 function PrintMigraExNa(classe) {
-  // classe.exNaList.pop();
   const migraExNa = MigraBuilder(
     "ExemploNotaAplicacao",
     "Exemplo de nota de aplicação",
@@ -185,7 +183,6 @@ function PrintMigraExNa(classe) {
 }
 
 function PrintMigraNe(classe) {
-  // classe.neList.pop();
   const migraNe = MigraBuilder(
     "NotaExclusao",
     "Nota de Exclusão",
