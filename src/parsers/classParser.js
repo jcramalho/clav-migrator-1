@@ -60,7 +60,6 @@ export default function classParser(data, _, report) {
         conteudo
       };
     });
-
   return {
     ...data,
     estado: getEstado(data.Estado, codigo, report),

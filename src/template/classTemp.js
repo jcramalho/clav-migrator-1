@@ -8,7 +8,7 @@
  * ###  http://jcr.di.uminho.pt/m51-clav#c100
  */
 import { proc_c400_10_001, printJustPCA, printJustDF } from "../helper.js";
-import invDfDistinto from "../invariantes.js";
+import { invDfDistinto, relacoesDfPca } from "../invariantes.js";
 
 export default function template(
   classe,
@@ -38,8 +38,8 @@ export default function template(
     PrintMigraNa(classe),
     PrintMigraExNa(classe),
     PrintMigraNe(classe),
-    PrintPCAl3(classe, classes, legislacao),
-    PrintDFl3(classe, classes, legislacao),
+    PrintPCAl3(classe, classes, legislacao, report),
+    PrintDFl3(classe, classes, legislacao, report),
     PrintPCAl4(classe, classes, legislacao),
     PrintDFl4(classe, classes, legislacao)
   );
@@ -194,10 +194,14 @@ function PrintMigraNe(classe) {
   }, "");
 }
 
-function PrintPCAl3(classe, classes, legislacao) {
+function PrintPCAl3(classe, classes, legislacao, report) {
   if (classe.codigo === "400.10.001") return proc_c400_10_001(classe);
   if (classe.classe.length === 3) {
-    if (!isNaN(classe["Prazo de conservação administrativa"]))
+    if (
+      relacoesDfPca(classe, classes, report) &&
+      (classe["Prazo de conservação administrativa"] ||
+        classe["Prazo de conservação administrativa"] === 0)
+    ) {
       return procPCA(
         classe,
         classe.pcaCode,
@@ -205,14 +209,16 @@ function PrintPCAl3(classe, classes, legislacao) {
         legislacao,
         classes
       );
+    }
+
     if (!(classe.codigo in classes.lvl3)) classes.lvl3.push(classe.codigo);
   }
 }
 
-function PrintDFl3(classe, classes, legislacao) {
+function PrintDFl3(classe, classes, legislacao, report) {
   if (classe.codigo === "400.10.001") return "";
   if (classe.classe.length === 3) {
-    if (classe["Destino final"])
+    if (classe["Destino final"] && relacoesDfPca(classe, classes, report))
       return procDF(classe, classe.dfCode, classe.codigo, legislacao, classes);
     if (!(classe.codigo in classes.lvl3)) classes.lvl3.push(classe.codigo);
   }
@@ -220,9 +226,10 @@ function PrintDFl3(classe, classes, legislacao) {
 
 function PrintPCAl4(classe, classes, legislacao) {
   if (
-    classe.classe.length === 4 &&
-    hasL3(classe.codigo, classes.lvl3) &&
-    !isNaN(classe["Prazo de conservação administrativa"])
+    (classe.classe.length === 4 &&
+      hasL3(classe.codigo, classes.lvl3) &&
+      classe["Prazo de conservação administrativa"]) ||
+    classe["Prazo de conservação administrativa"] === 0
   )
     return procPCA(classe, classe.pcaCode, classe.codigo, legislacao, classes);
 }
@@ -291,6 +298,8 @@ function procPCA(data, pcaCode, cod, leg, classes) {
   const regex = RegExp("[]*[0-9]+[]*");
   if (regex.test(data["Prazo de conservação administrativa"])) {
     out += `:${pcaCode} :pcaValor ${data["Prazo de conservação administrativa"]}.\n`;
+  } else {
+    out += `:${pcaCode} :pcaValor "${data["Prazo de conservação administrativa"]}".\n`;
   }
 
   if (data["Nota ao PCA"] && data["Nota ao PCA"].trim() !== "") {
