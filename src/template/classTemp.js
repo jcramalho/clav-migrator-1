@@ -8,7 +8,12 @@
  * ###  http://jcr.di.uminho.pt/m51-clav#c100
  */
 import { proc_c400_10_001, printJustPCA, printJustDF } from "../helper.js";
-import { invDfDistinto, relacoesDfPca } from "../invariantes.js";
+import {
+  invDfDistinto,
+  relacoesPca,
+  relacoesDf,
+  legsCritLegal
+} from "../invariantes.js";
 
 export default function template(
   classe,
@@ -34,6 +39,7 @@ export default function template(
     PrintRelLeg(classe, legislacao),
     PrintDim(classe),
     PrintUnif(classe),
+    PrintHasLegs(classe, classes, legislacao),
     `\t:descricao "${classe.descricao}".`,
     PrintMigraNa(classe),
     PrintMigraExNa(classe),
@@ -157,8 +163,35 @@ function PrintUnif(classe) {
     return `\t:processoUniform "${classe.unifProc}" ;`;
 }
 
+/*
+Invariantes 3.14 e 3.15
+*/
+function PrintHasLegs(classe, classes, legislacao) {
+  let out = "";
+  if (classe.classe.length === 3) {
+    if (classe.pcaJust.legal) {
+      out += legsCritLegal(classe.pcaJust.legal, legislacao);
+    }
+    if (classe.dfJust.legal) {
+      out += legsCritLegal(classe.dfJust.legal, legislacao);
+    }
+    const codL3 = classe.classe.join(".");
+    const lexRegex = new RegExp(`${codL3}.\\d{2}`, "g");
+
+    const filhos = classes.filter(item => {
+      if (item.codigo === classe.codigo) return false;
+      return item.codigo.match(lexRegex);
+    });
+
+    filhos.forEach(({ pcaJust, dfJust }) => {
+      if (pcaJust.legal) out += legsCritLegal(pcaJust.legal, legislacao);
+      if (dfJust.legal) out += legsCritLegal(dfJust.legal, legislacao);
+    });
+  }
+  return out;
+}
+
 function PrintMigraNa(classe) {
-  // classe.naList.pop();
   const migraNa = MigraBuilder(
     "NotaAplicacao",
     "Nota de Aplicação",
@@ -198,7 +231,7 @@ function PrintPCAl3(classe, classes, legislacao, report) {
   if (classe.codigo === "400.10.001") return proc_c400_10_001(classe);
   if (classe.classe.length === 3) {
     if (
-      relacoesDfPca(classe, classes, report) &&
+      relacoesPca(classe, classes, report) &&
       (classe["Prazo de conservação administrativa"] ||
         classe["Prazo de conservação administrativa"] === 0)
     ) {
@@ -218,7 +251,7 @@ function PrintPCAl3(classe, classes, legislacao, report) {
 function PrintDFl3(classe, classes, legislacao, report) {
   if (classe.codigo === "400.10.001") return "";
   if (classe.classe.length === 3) {
-    if (classe["Destino final"] && relacoesDfPca(classe, classes, report))
+    if (relacoesDf(classe, classes, report) && classe["Destino final"])
       return procDF(classe, classe.dfCode, classe.codigo, legislacao, classes);
     if (!(classe.codigo in classes.lvl3)) classes.lvl3.push(classe.codigo);
   }

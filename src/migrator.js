@@ -4,7 +4,12 @@ import fs from "fs";
 const migrator = {
   data: {},
   readName: "default",
-  log: { geral: [], parsing: [], invariantes: [] }
+  log: {
+    parsing: [],
+    invariantes: [],
+    2: { 4: [], 5: [] },
+    3: { 1: [] }
+  }
 };
 
 migrator.read = function read(sheet, name) {
@@ -50,8 +55,13 @@ migrator.convert2 = function convert(template, name) {
   return document;
 };
 
-migrator.report = function report({ msg, type }, defaultVal = null) {
-  this.log[type].push(msg);
+migrator.report = function report({ msg, type, code }, defaultVal = null) {
+  if (type > 0) this.log.invariantes.push(msg);
+  else {
+    this.log.parsing.push(msg);
+    return defaultVal;
+  }
+  this.log[type][code].push(msg);
   return defaultVal;
 };
 
@@ -64,7 +74,12 @@ migrator.printLog = function printLog(outFile) {
   }, "");
   fs.writeFileSync(`log/${outFile}`, parse + inv);
 
-  this.log = { geral: [], parsing: [], invariantes: [] };
+  this.log = {
+    parsing: [],
+    invariantes: [],
+    2: { 2: [], 4: [], 5: [] },
+    3: { 1: [] }
+  };
 };
 
 export default migrator;

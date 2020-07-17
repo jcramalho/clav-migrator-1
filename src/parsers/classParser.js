@@ -60,6 +60,8 @@ export default function classParser(data, _, report) {
         conteudo
       };
     });
+  const pcaJust = getPcaJust(data["Justificação PCA"], codigo, report);
+  const dfJust = getDfJust(data["Justificação DF"], codigo, report);
   return {
     ...data,
     estado: getEstado(data.Estado, codigo, report),
@@ -162,10 +164,13 @@ export default function classParser(data, _, report) {
     // MigraPCA
     pcaCode: `pca_c${codigo}`,
     justPcaCode: `just_pca_c${codigo}`,
-    pcaJust: getPcaJust(data["Justificação PCA"], codigo, report),
+    pcaJust,
     // MigraDF
     dfCode: `df_c${codigo}`,
     justDfCode: `just_df_c${codigo}`,
-    dfJust: getDfJust(data["Justificação DF"], codigo, report)
+    dfJust,
+    // Legs do criterio legal
+    pcaLegs: [],
+    dfLegs: []
   };
 }

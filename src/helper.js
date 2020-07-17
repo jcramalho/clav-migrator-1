@@ -71,7 +71,7 @@ export function proc_c400_10_001(classe) {
 function getJustification(name, text, codigo, report) {
   const cleanTxt = text.replace(/(\r\n|\n|\r)/gm, "");
   const lexRegex = new RegExp(`#${name}:[^#]+`, "g");
-  const result = cleanTxt.match(lexRegex);
+  let result = cleanTxt.match(lexRegex);
 
   if (!result)
     return report(
@@ -82,7 +82,7 @@ function getJustification(name, text, codigo, report) {
       false
     );
 
-  result.forEach(res => res.replace(`#${name}:`, "").replace(/"/g, '\\"'));
+  result = result.map(res => res.replace(`#${name}:`, "").replace(/"/g, '\\"'));
 
   return result;
 }
@@ -91,7 +91,7 @@ function printSingleJust(criteria, content, critCode, justCode) {
   let output = "";
   output += `:${critCode} rdf:type owl:NamedIndividual ,\n`;
   output += `\t:${criteria};\n`;
-  output += `\t:conteudo "${content.replace(/"/gm, '\\"')}".\n`;
+  output += `\t:conteudo "${content.replace(/"/gm, '"')}".\n`;
   output += `:${justCode} :temCriterio :${critCode}.\n`;
   return output;
 }

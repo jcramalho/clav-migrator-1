@@ -17,15 +17,7 @@ export default function entParser(data, _, report) {
           .replace(/\.|,/gm, "_")
           .replace(/ /gm, "_"),
     estado: !data.Estado || data.Estado === "Ativo" ? "A" : "I",
-    international: !data.International
-      ? report(
-          {
-            msg: `Entidade ${data.Sigla} sem Internacional`,
-            type: "parsing"
-          },
-          ""
-        )
-      : data.International,
+    international: !data.International ? "" : data.International,
     entTipo: getEntTipo(data["Tipologia de Entidade"], data.Sigla, report),
     idSIOE: data["ID SIOE"]
       ? data["ID SIOE"]

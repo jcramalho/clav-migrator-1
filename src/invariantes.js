@@ -1,5 +1,5 @@
 /*
-DF distinto: Deve haver uma relação de síntese (de ou por) entre as classes 4 filhas -> CORRIGIDO
+2.2) DF distinto: Deve haver uma relação de síntese (de ou por) entre as classes 4 filhas -> CORRIGIDO
 */
 export function invDfDistinto(classe, classes) {
   if (classe.classe.length !== 4) return "";
@@ -21,17 +21,19 @@ export function invDfDistinto(classe, classes) {
 }
 
 /*
-1) As relações temDF e temPCA, não existem numa classe 3 se esta tiver filhos -> CORRIGIDO + REPORT
+2.4) As relações temDF e temPCA, não existem numa classe 3 se esta tiver filhos -> CORRIGIDO + REPORT
 
-2) As relações temDF e temPCA, existem numa classe 3 se esta não tiver filhos -> REPORT
+2.5) As relações temDF e temPCA, existem numa classe 3 se esta não tiver filhos -> REPORT
+
+3.1) Um processo sem desdobramento ao 4º nível tem de ter uma justificação associada ao PCA -> REPORT
 */
 
-export function relacoesDfPca(classe, classes, report) {
+export function relacoesPca(classe, classes, report) {
   const codL3 = classe.codigo;
   const lexRegex = new RegExp(`${codL3}.\\d{2}`, "g");
 
   const filhos = classes.filter(item => {
-    return lexRegex.test(item.codigo);
+    return item.codigo.match(lexRegex);
   });
 
   if (filhos.length > 0) {
@@ -42,18 +44,12 @@ export function relacoesDfPca(classe, classes, report) {
       report(
         {
           msg: `A classe ${codL3} não pode ter filhos e PCA`,
-          type: "invariantes"
+          type: 2,
+          code: 4
         },
         false
       );
-    if (classe["Destino final"])
-      report(
-        {
-          msg: `A classe ${codL3} não pode ter filhos e DF`,
-          type: "invariantes"
-        },
-        false
-      );
+
     return false;
   }
 
@@ -64,17 +60,81 @@ export function relacoesDfPca(classe, classes, report) {
     report(
       {
         msg: `A classe ${codL3} não tem filhos nem PCA`,
-        type: "invariantes"
+        type: 2,
+        code: 5
       },
       false
     );
-  if (!classe["Destino final"])
+  if (!classe["Justificação PCA"])
     report(
       {
-        msg: `A classe ${codL3} não tem filhos nem DF`,
-        type: "invariantes"
+        msg: `A classe ${codL3} não tem filhos nem Justificação de PCA`,
+        type: 3,
+        code: 1
       },
       false
     );
   return true;
+}
+
+export function relacoesDf(classe, classes, report) {
+  const codL3 = classe.codigo;
+  const lexRegex = new RegExp(`${codL3}.\\d{2}`, "g");
+
+  const filhos = classes.filter(item => {
+    return item.codigo.match(lexRegex);
+  });
+
+  if (filhos.length > 0) {
+    if (classe["Destino final"])
+      report(
+        {
+          msg: `A classe ${codL3} não pode ter filhos e DF`,
+          type: 2,
+          code: 4
+        },
+        false
+      );
+    return false;
+  }
+  if (!classe["Destino final"])
+    report(
+      {
+        msg: `A classe ${codL3} não tem filhos nem DF`,
+        type: 2,
+        code: 5
+      },
+      false
+    );
+  return true;
+}
+
+/*
+3.14) Um diploma legislativo referenciado num critério de justicação tem de estar associado na zona de contexto do processo que tem essa justificação (Classes de nível 3) -> CORRIGIDO
+
+3.15) Um diploma legislativo referenciado num critério de justicação tem de estar associado na zona de contexto do processo que tem essa justificação (Classes de nível 4) -> CORRIGIDO
+*/
+
+export function legsCritLegal(critLegal, legList) {
+  const legAssoc = critLegal.reduce((prev, leg) => {
+    const l = leg.match(/\[[a-zA-Z0-9\-/ ]+\]/g);
+
+    if (Array.isArray(l)) prev.push(...l);
+    return prev;
+  }, []);
+
+  if (legAssoc) {
+    const out = legAssoc.reduce((prev, leg, i) => {
+      if (i) prev += "\n";
+      const legRef = leg.substring(1, leg.length - 1);
+      const index = legList.findIndex(
+        legislacao => legislacao.tipoCode === legRef
+      );
+      if (index > -1)
+        return `${prev}\t:temLegislacao :${legList[index].legCode} ;`;
+      return prev;
+    }, "");
+    return out;
+  }
+  return "";
 }
