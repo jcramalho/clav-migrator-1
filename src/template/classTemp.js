@@ -7,19 +7,13 @@
  *
  * ###  http://jcr.di.uminho.pt/m51-clav#c100
  */
-import {
-  proc_c400_10_001,
-  printJustPCA,
-  printJustDF,
-  getFilhos
-} from "../helper.js";
+import { proc_c400_10_001, printJustPCA, printJustDF } from "../helper.js";
 import {
   invDfDistinto,
   relacoesPca,
   relacoesDf,
   legsCritLegal,
-  invSuplementoPara,
-  invCritAdmin
+  invSuplementoPara
 } from "../invariantes.js";
 
 export default function template(
