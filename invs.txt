@@ -10,8 +10,9 @@
     > 3.15 -> CORRIGIDO SEM REPORT
 4 - Invariantes sobre a relação suplementar - implicações no PCA
     > 4.1 -> REPORT
-    > 4.2 -> REPORT
+    > 4.2 -> CORRIGIDO
 5 - Invariantes sobre a relação síntese - implicações no DF
+    > 5.3 -> REPORT
 6 - Invariantes sobre a relação complementar - implicações no DF
 7 - Invariantes sobre o destino final (DF)
 8 - Invariantes das relações temRelProc. Só se aplica ao 3º nível. (por ordem de prioridade)

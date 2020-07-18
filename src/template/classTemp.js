@@ -7,13 +7,19 @@
  *
  * ###  http://jcr.di.uminho.pt/m51-clav#c100
  */
-import { proc_c400_10_001, printJustPCA, printJustDF } from "../helper.js";
+import {
+  proc_c400_10_001,
+  printJustPCA,
+  printJustDF,
+  getRelProc
+} from "../helper.js";
 import {
   invDfDistinto,
   relacoesPca,
   relacoesDf,
   legsCritLegal,
-  invSuplementoPara
+  invSuplementoPara,
+  invSintese
 } from "../invariantes.js";
 
 export default function template(
@@ -111,7 +117,10 @@ function PrintRelProc(classe, classes, report) {
   classe.codProcRel.pop();
   classe.tipoRelProc.pop();
 
-  const out = invDfDistinto(classe, classes, report);
+  const out = "";
+  const rels = invDfDistinto(classe, classes, report);
+  classe.codProcRel = [...classe.codProcRel, ...rels.codProcRel];
+  classe.tipoRelProc = [...classe.tipoRelProc, ...rels.tipoRelProc];
 
   if (classe.codProcRel.length !== classe.tipoRelProc.length) {
     report(
@@ -121,6 +130,7 @@ function PrintRelProc(classe, classes, report) {
       },
       ""
     );
+
     return (
       out +
       classe.codProcRel.reduce((prev, cod, index) => {
@@ -137,9 +147,11 @@ function PrintRelProc(classe, classes, report) {
 
       invSuplementoPara(relProc, classe, classes, report);
 
+      invSintese(relProc, classe, classes, report);
+
       if (index) prev += "\n";
 
-      return `${prev}\t:${getRelProc(relProc)} :c${classe.codProcRel[index]} ;`;
+      return `${prev}\t:${relProc} :c${classe.codProcRel[index]} ;`;
     }, "")
   );
 }
@@ -304,19 +316,6 @@ function MigraBuilder(note, label, hasNote) {
     out += `:${code} :${hasNote} :${id} .`;
     return out;
   };
-}
-
-function getRelProc(tipo) {
-  if (tipo.match(/S[íi]ntese[ ]*\(s[ií]ntetizad[oa]\)/gi))
-    return "eSintetizadoPor";
-  if (tipo.match(/S[íi]ntese[ ]*\(sintetiza\)/gi)) return "eSinteseDe";
-  if (tipo.startsWith("Complementar")) return "eComplementarDe";
-  if (tipo.match(/\s*Cruzad/gi)) return "eCruzadoCom";
-  if (tipo.match(/\s*Suplement.?\s*de/)) return "eSuplementoDe";
-  if (tipo.match(/\s*Suplement.?\s*para/)) return "eSuplementoPara";
-  if (tipo.match(/Sucessão[ ]*\(suce/gi)) return "eSucessorDe";
-  if (tipo.match(/\s*Sucessão\s*\(antece/gi)) return "eAntecessorDe";
-  return "temRelProc";
 }
 
 function getPrefix(part, entidade, tipologia) {

@@ -80,7 +80,8 @@ migrator.printLog = function printLog(outFile) {
     invariantes: [],
     2: { 2: [], 4: [], 5: [] },
     3: { 1: [] },
-    4: { 1: [] }
+    4: { 1: [] },
+    5: { 3: [] }
   };
 };
 

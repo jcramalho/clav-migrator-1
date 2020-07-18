@@ -1,3 +1,4 @@
+/* eslint-disable import/extensions */
 /* eslint-disable import/no-cycle */
 import { invCritAdmin } from "./invariantes.js";
 
@@ -366,11 +367,7 @@ export function getFilhos(classe, classes) {
   });
 }
 
-/**
- * :FIXME:
- * @param {} tipo
- */
-function getRelProc(tipo) {
+export function getRelProc(tipo) {
   if (tipo.match(/S[íi]ntese[ ]*\(s[ií]ntetizad[oa]\)/gi))
     return "eSintetizadoPor";
   if (tipo.match(/S[íi]ntese[ ]*\(sintetiza\)/gi)) return "eSinteseDe";
