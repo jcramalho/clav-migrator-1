@@ -1,3 +1,6 @@
+/* eslint-disable import/extensions */
+import { getFilhos } from "./helper.js";
+
 /*
 2.2) DF distinto: Deve haver uma relação de síntese (de ou por) entre as classes 4 filhas -> CORRIGIDO
 */
@@ -135,6 +138,38 @@ export function legsCritLegal(critLegal, legList) {
       return prev;
     }, "");
     return out;
+  }
+  return "";
+}
+
+/**
+ * 4.1) ... -> REPORT
+ */
+export function invSuplementoPara(relProc, classe, classes, report) {
+  if (
+    relProc === "eSuplementoPara" &&
+    !classe.pcaJust.admin &&
+    getFilhos(classe.classe, classes).length === 0
+  ) {
+    report({
+      msg: `A classe ${classe.codigo} é suplemento para outra mas não tem critério de Utilidade Administrativa na Justificaçao de PCA`,
+      type: 4,
+      code: 1
+    });
+  }
+}
+
+/**
+ * 4.2) ... -> CORRIGIDO
+ */
+export function invCritAdmin(relProc, procRel, classe, classes, critCode) {
+  if (
+    relProc === "eSuplementoPara" &&
+    classe.pcaJust.admin &&
+    getFilhos(classe.classe, classes).length === 0 &&
+    classe.classe.length === 3
+  ) {
+    return `:${critCode} :critTemProcRel :c${procRel}.\n`;
   }
   return "";
 }

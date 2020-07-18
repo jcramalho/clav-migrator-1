@@ -1,3 +1,6 @@
+/* eslint-disable import/no-cycle */
+import { invCritAdmin } from "./invariantes.js";
+
 /* eslint-disable camelcase */
 export function getEstado(estado, codigo, report) {
   if (estado === undefined || estado.trim() === "") return "A";
@@ -149,7 +152,7 @@ export function getPcaJust(data, codigo, report) {
   return { legal, gest, admin };
 }
 
-export function printJustPCA(pcas, justPcaCode, legList, procList) {
+export function printJustPCA(pcas, justPcaCode, legList, procList, classe) {
   let output = "";
   let critCode = "";
   let counter = 0;
@@ -216,6 +219,15 @@ export function printJustPCA(pcas, justPcaCode, legList, procList) {
         procList,
         critCode
       );
+
+      out += classe.tipoRelProc.reduce((tempout, tipo, index) => {
+        const relProc = getRelProc(tipo);
+        const procRel = classe.codProcRel[index];
+
+        return (
+          tempout + invCritAdmin(relProc, procRel, classe, procList, critCode)
+        );
+      }, "");
 
       return prev + out;
     }, "");
@@ -341,4 +353,32 @@ export function printJustDF(dfs, justDfCode, legList, procList) {
     }, "");
   }
   return output;
+}
+
+export function getFilhos(classe, classes) {
+  const code = classe.join(".");
+
+  const lexRegex = new RegExp(`${code}.\\d{2}`, "g");
+
+  return classes.filter(item => {
+    if (item.codigo === code) return false;
+    return item.codigo.match(lexRegex);
+  });
+}
+
+/**
+ * :FIXME:
+ * @param {} tipo
+ */
+function getRelProc(tipo) {
+  if (tipo.match(/S[íi]ntese[ ]*\(s[ií]ntetizad[oa]\)/gi))
+    return "eSintetizadoPor";
+  if (tipo.match(/S[íi]ntese[ ]*\(sintetiza\)/gi)) return "eSinteseDe";
+  if (tipo.startsWith("Complementar")) return "eComplementarDe";
+  if (tipo.match(/\s*Cruzad/gi)) return "eCruzadoCom";
+  if (tipo.match(/\s*Suplement.?\s*de/)) return "eSuplementoDe";
+  if (tipo.match(/\s*Suplement.?\s*para/)) return "eSuplementoPara";
+  if (tipo.match(/Sucessão[ ]*\(suce/gi)) return "eSucessorDe";
+  if (tipo.match(/\s*Sucessão\s*\(antece/gi)) return "eAntecessorDe";
+  return "temRelProc";
 }

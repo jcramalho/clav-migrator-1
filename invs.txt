@@ -9,6 +9,8 @@
     > 3.14 -> CORRIGIDO SEM REPORT
     > 3.15 -> CORRIGIDO SEM REPORT
 4 - Invariantes sobre a relação suplementar - implicações no PCA
+    > 4.1 -> REPORT
+    > 4.2 -> REPORT
 5 - Invariantes sobre a relação síntese - implicações no DF
 6 - Invariantes sobre a relação complementar - implicações no DF
 7 - Invariantes sobre o destino final (DF)

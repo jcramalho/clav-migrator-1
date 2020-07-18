@@ -7,12 +7,19 @@
  *
  * ###  http://jcr.di.uminho.pt/m51-clav#c100
  */
-import { proc_c400_10_001, printJustPCA, printJustDF } from "../helper.js";
+import {
+  proc_c400_10_001,
+  printJustPCA,
+  printJustDF,
+  getFilhos
+} from "../helper.js";
 import {
   invDfDistinto,
   relacoesPca,
   relacoesDf,
-  legsCritLegal
+  legsCritLegal,
+  invSuplementoPara,
+  invCritAdmin
 } from "../invariantes.js";
 
 export default function template(
@@ -110,7 +117,7 @@ function PrintRelProc(classe, classes, report) {
   classe.codProcRel.pop();
   classe.tipoRelProc.pop();
 
-  const out = invDfDistinto(classe, classes);
+  const out = invDfDistinto(classe, classes, report);
 
   if (classe.codProcRel.length !== classe.tipoRelProc.length) {
     report(
@@ -132,8 +139,13 @@ function PrintRelProc(classe, classes, report) {
   return (
     out +
     classe.tipoRelProc.reduce((prev, tipo, index) => {
+      const relProc = getRelProc(tipo);
+
+      invSuplementoPara(relProc, classe, classes, report);
+
       if (index) prev += "\n";
-      return `${prev}\t:${getRelProc(tipo)} :c${classe.codProcRel[index]} ;`;
+
+      return `${prev}\t:${getRelProc(relProc)} :c${classe.codProcRel[index]} ;`;
     }, "")
   );
 }
@@ -323,27 +335,29 @@ function hasPart(part, arr) {
   return arr.findIndex(({ sigla }) => sigla === part) > -1;
 }
 
-function procPCA(data, pcaCode, cod, leg, classes) {
+function procPCA(classe, pcaCode, cod, leg, classes) {
   let out = `###  http://jcr.di.uminho.pt/m51-clav#${pcaCode}\n`;
   out += `:${pcaCode} rdf:type owl:NamedIndividual ,\n`;
   out += "\t:PCA .\n";
 
   const regex = RegExp("[]*[0-9]+[]*");
-  if (regex.test(data["Prazo de conservação administrativa"])) {
-    out += `:${pcaCode} :pcaValor ${data["Prazo de conservação administrativa"]}.\n`;
+  if (regex.test(classe["Prazo de conservação administrativa"])) {
+    out += `:${pcaCode} :pcaValor ${classe["Prazo de conservação administrativa"]}.\n`;
   } else {
-    out += `:${pcaCode} :pcaValor "${data["Prazo de conservação administrativa"]}".\n`;
+    out += `:${pcaCode} :pcaValor "${classe["Prazo de conservação administrativa"]}".\n`;
   }
 
-  if (data["Nota ao PCA"] && data["Nota ao PCA"].trim() !== "") {
+  if (classe["Nota ao PCA"] && classe["Nota ao PCA"].trim() !== "") {
     out +=
       `:${pcaCode} :pcaNota ` +
-      `"${data["Nota ao PCA"].replace(/"/g, '\\"').replace(/\n/g, " ")}".\n\n`;
+      `"${classe["Nota ao PCA"]
+        .replace(/"/g, '\\"')
+        .replace(/\n/g, " ")}".\n\n`;
   }
 
   out += `:c${cod} :temPCA :${pcaCode}.\n`;
 
-  const myContagem = data["Forma de contagem do PCA"];
+  const myContagem = classe["Forma de contagem do PCA"];
   if (myContagem) {
     const re_fc_concProc = /conclusão.*procedimento/;
     const re_fc_cessVig = /cessação.*vigência/;
@@ -407,13 +421,19 @@ function procPCA(data, pcaCode, cod, leg, classes) {
     }
   }
 
-  if (data["Justificação PCA"]) {
-    out += `###  http://jcr.di.uminho.pt/m51-clav#${data.justPcaCode}\n`;
-    out += `:${data.justPcaCode} rdf:type owl:NamedIndividual ,\n`;
+  if (classe["Justificação PCA"]) {
+    out += `###  http://jcr.di.uminho.pt/m51-clav#${classe.justPcaCode}\n`;
+    out += `:${classe.justPcaCode} rdf:type owl:NamedIndividual ,\n`;
     out += "\t:JustificacaoPCA.\n";
-    out += `:${pcaCode} :temJustificacao :${data.justPcaCode}.\n`;
+    out += `:${pcaCode} :temJustificacao :${classe.justPcaCode}.\n`;
 
-    out += printJustPCA(data.pcaJust, data.justPcaCode, leg, classes);
+    out += printJustPCA(
+      classe.pcaJust,
+      classe.justPcaCode,
+      leg,
+      classes,
+      classe
+    );
   }
 
   return out;
