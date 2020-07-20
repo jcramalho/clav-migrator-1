@@ -13,6 +13,10 @@
     > 4.2 -> CORRIGIDO
 5 - Invariantes sobre a relação síntese - implicações no DF
     > 5.3 -> REPORT
+    > 5.4 -> CORRIGIDO
 6 - Invariantes sobre a relação complementar - implicações no DF
+    > 6.2 -> REPORT
+    > 6.3 -> CORRIGIDO
 7 - Invariantes sobre o destino final (DF)
+    > 7.1 -> REPORT
 8 - Invariantes das relações temRelProc. Só se aplica ao 3º nível. (por ordem de prioridade)

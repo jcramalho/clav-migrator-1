@@ -191,3 +191,62 @@ export function invSintese(relProc, classe, classes, report) {
     });
   }
 }
+
+/**
+ * 5.4) ... -> CORRIGIDO
+ */
+export function invCritDens(relProc, procRel, classe, classes, critCode) {
+  const valor = classe["Destino final"].trim().replace(/(\r\n|\n|\r)/gm, "");
+  if (
+    (relProc === "eSinteseDe" || relProc === "eSintetizadoPor") &&
+    valor !== "C" &&
+    classe.dfJust.dens &&
+    getFilhos(classe.classe, classes).length === 0
+  ) {
+    return `:${critCode} :critTemProcRel :c${procRel}.\n`;
+  }
+  return "";
+}
+
+/**
+ * 6.2) ... -> REPORT
+ */
+export function invDfComp(relProc, classe, classes, report) {
+  if (
+    relProc === "eComplementarDe" &&
+    !classe.dfJust.comp &&
+    classe.classe.length === 3
+  ) {
+    report({
+      msg: `A classe ${classe.codigo} é complementar de outro, mas não tem critério de complementaridade informacional na Justificação do DF`,
+      type: 6,
+      code: 2
+    });
+  }
+}
+
+/**
+ * 6.3) ... -> CORRIGIDO
+ */
+export function invCritComp(relProc, procRel, classe, critCode) {
+  if (
+    relProc === "eComplementarDe" &&
+    classe.dfJust.comp &&
+    classe.classe.length === 3
+  ) {
+    return `:${critCode} :critTemProcRel :c${procRel}.\n`;
+  }
+  return "";
+}
+/**
+ * 7.1) ... -> REPORT
+ */
+export function invCritLen(criterios, name, codigo, report) {
+  if (criterios.length > 1) {
+    report({
+      msg: `Justificação do PCA/DF da classe ${codigo} tem mais do que um ${name}`,
+      type: 7,
+      code: 1
+    });
+  }
+}

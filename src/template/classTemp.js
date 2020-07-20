@@ -455,7 +455,7 @@ function procDF(data, dfCode, cod, leg, classes) {
     out += "\t:JustificacaoDF.\n";
 
     out += `:${dfCode} :temJustificacao :${data.justDfCode}.\n`;
-    out += printJustDF(data.dfJust, data.justDfCode, leg, classes);
+    out += printJustDF(data.dfJust, data.justDfCode, leg, classes, data);
   }
   return out;
 }

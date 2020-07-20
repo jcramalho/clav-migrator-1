@@ -1,6 +1,11 @@
 /* eslint-disable import/extensions */
 /* eslint-disable import/no-cycle */
-import { invCritAdmin } from "./invariantes.js";
+import {
+  invCritAdmin,
+  invCritDens,
+  invCritComp,
+  invCritLen
+} from "./invariantes.js";
 
 /* eslint-disable camelcase */
 export function getEstado(estado, codigo, report) {
@@ -85,6 +90,8 @@ function getJustification(name, text, codigo, report) {
       },
       false
     );
+
+  invCritLen(result, name, codigo, report);
 
   result = result.map(res => res.replace(`#${name}:`, "").replace(/"/g, '\\"'));
 
@@ -261,7 +268,7 @@ export function getDfJust(data, codigo, report) {
   return { legal, dens, comp };
 }
 
-export function printJustDF(dfs, justDfCode, legList, procList) {
+export function printJustDF(dfs, justDfCode, legList, procList, classe) {
   let output = "";
   let critCode = "";
   let counter = 0;
@@ -321,6 +328,13 @@ export function printJustDF(dfs, justDfCode, legList, procList) {
       out += hasLegAssoc(crit, legList, critCode);
       out += hasProcRel(procRel, procList, critCode);
 
+      out += classe.tipoRelProc.reduce((tempout, tipo, index) => {
+        const relProc = getRelProc(tipo);
+        const proc = classe.codProcRel[index];
+
+        return tempout + invCritComp(relProc, proc, classe, critCode);
+      }, "");
+
       return prev + out;
     }, "");
   }
@@ -349,6 +363,13 @@ export function printJustDF(dfs, justDfCode, legList, procList) {
 
       out += hasLegAssoc(crit, legList, critCode);
       out += hasProcRel(procRel, procList, critCode);
+
+      out += classe.tipoRelProc.reduce((tempout, tipo, index) => {
+        const relProc = getRelProc(tipo);
+        const proc = classe.codProcRel[index];
+
+        return tempout + invCritDens(relProc, proc, classe, procList, critCode);
+      }, "");
 
       return prev + out;
     }, "");
