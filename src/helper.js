@@ -4,7 +4,8 @@ import {
   invCritAdmin,
   invCritDens,
   invCritComp,
-  invCritLen
+  invCritLenDF,
+  invCritLenPCA
 } from "./invariantes.js";
 
 /* eslint-disable camelcase */
@@ -77,25 +78,42 @@ export function proc_c400_10_001(classe) {
 // Migração JUSTIFICACOES______________________________________
 // Auxiliares
 
-function getJustification(name, text, codigo, report) {
+function getJustificationPCA(name, text, codigo, report) {
   const cleanTxt = text.replace(/(\r\n|\n|\r)/gm, "");
   const lexRegex = new RegExp(`#${name}:[^#]+`, "g");
-  let result = cleanTxt.match(lexRegex);
+  const result = cleanTxt.match(lexRegex);
 
   if (!result)
     return report(
       {
-        msg: `Justificação do PCA/DF da classe ${codigo} não tem ${name}`,
+        msg: `Justificação do PCA da classe ${codigo} não tem ${name}`,
         type: "parsing"
       },
       false
     );
 
-  invCritLen(result, name, codigo, report);
+  invCritLenPCA(result, name, codigo, report);
 
-  result = result.map(res => res.replace(`#${name}:`, "").replace(/"/g, '\\"'));
+  return [result[0].replace(`#${name}:`, "").replace(/"/g, '\\"')];
+}
 
-  return result;
+function getJustificationDF(name, text, codigo, report) {
+  const cleanTxt = text.replace(/(\r\n|\n|\r)/gm, "");
+  const lexRegex = new RegExp(`#${name}:[^#]+`, "g");
+  const result = cleanTxt.match(lexRegex);
+
+  if (!result)
+    return report(
+      {
+        msg: `Justificação do DF da classe ${codigo} não tem ${name}`,
+        type: "parsing"
+      },
+      false
+    );
+
+  invCritLenDF(result, name, codigo, report);
+
+  return [result[0].replace(`#${name}:`, "").replace(/"/g, '\\"')];
 }
 
 function printSingleJust(criteria, content, critCode, justCode) {
@@ -149,9 +167,14 @@ export function getPcaJust(data, codigo, report) {
       false
     );
 
-  const legal = getJustification("Critério legal", data, codigo, report);
-  const gest = getJustification("Critério gestionário", data, codigo, report);
-  const admin = getJustification(
+  const legal = getJustificationPCA("Critério legal", data, codigo, report);
+  const gest = getJustificationPCA(
+    "Critério gestionário",
+    data,
+    codigo,
+    report
+  );
+  const admin = getJustificationPCA(
     "Critério de utilidade administrativa",
     data,
     codigo,
@@ -252,14 +275,14 @@ export function getDfJust(data, codigo, report) {
       false
     );
 
-  const legal = getJustification("Critério legal", data, codigo, report);
-  const dens = getJustification(
+  const legal = getJustificationDF("Critério legal", data, codigo, report);
+  const dens = getJustificationDF(
     "Critério de densidade informacional",
     data,
     codigo,
     report
   );
-  const comp = getJustification(
+  const comp = getJustificationDF(
     "Critério de complementaridade informacional",
     data,
     codigo,

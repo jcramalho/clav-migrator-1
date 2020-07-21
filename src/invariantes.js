@@ -3,9 +3,9 @@
 import { getFilhos } from "./helper.js";
 
 /*
-2.2) DF distinto: Deve haver uma relação de síntese (de ou por) entre as classes 4 filhas -> CORRIGIDO
+2.2) DF distinto: Deve haver uma relação de síntese (de ou por) entre as classes 4 filhas -> CORRIGIDO + REPORT
 */
-export function invDfDistinto(classe, classes) {
+export function invDfDistinto(classe, classes, report) {
   if (classe.classe.length !== 4) return { codProcRel: [], tipoRelProc: [] };
 
   const codL4 = classe.classe;
@@ -17,6 +17,48 @@ export function invDfDistinto(classe, classes) {
     if (item.codigo === classe.codigo) return false;
     return lexRegex.test(item.codigo);
   });
+
+  if (
+    irmao.length > 0 &&
+    classe["Destino final"] &&
+    irmao[0]["Destino final"] &&
+    classe["Destino final"].trim().replace(/(\r\n|\n|\r)/gm, "") ===
+      irmao[0]["Destino final"].trim().replace(/(\r\n|\n|\r)/gm, "")
+  ) {
+    report({
+      msg: `As classes ${codL4.join(".")} e ${
+        irmao[0].codigo
+      } têm o mesmo valor DF, logo não podem ser sintetizadas`,
+      type: 2,
+      code: 2
+    });
+    return { codProcRel: [], tipoRelProc: [] };
+  }
+
+  if (codL4[3] === "02") {
+    return {
+      codProcRel: [...irmao.map(item => item.codigo)],
+      tipoRelProc: [...irmao.map(() => "Síntese (sintetizado)")]
+    };
+  }
+
+  // if (
+  //   classe["Destino final"] &&
+  //   classe["Destino final"].trim().replace(/(\r\n|\n|\r)/gm, "") === "C"
+  // )
+  //   return {
+  //     codProcRel: [...irmao.map(item => item.codigo)],
+  //     tipoRelProc: [...irmao.map(() => "Síntese (sintetiza)")]
+  //   };
+
+  // if (
+  //   classe["Destino final"] &&
+  //   classe["Destino final"].trim().replace(/(\r\n|\n|\r)/gm, "") === "E"
+  // )
+  //   return {
+  //     codProcRel: [...irmao.map(item => item.codigo)],
+  //     tipoRelProc: [...irmao.map(() => "Síntese (sintetizado)")]
+  //   };
 
   return {
     codProcRel: [...irmao.map(item => item.codigo)],
@@ -107,6 +149,15 @@ export function relacoesDf(classe, classes, report) {
         msg: `A classe ${codL3} não tem filhos nem DF`,
         type: 2,
         code: 5
+      },
+      false
+    );
+  if (!classe["Justificação DF"])
+    report(
+      {
+        msg: `A classe ${codL3} não tem filhos nem Justificação de DF`,
+        type: 3,
+        code: 1
       },
       false
     );
@@ -241,10 +292,20 @@ export function invCritComp(relProc, procRel, classe, critCode) {
 /**
  * 7.1) ... -> REPORT
  */
-export function invCritLen(criterios, name, codigo, report) {
+export function invCritLenPCA(criterios, name, codigo, report) {
   if (criterios.length > 1) {
     report({
-      msg: `Justificação do PCA/DF da classe ${codigo} tem mais do que um ${name}`,
+      msg: `Justificação do PCA da classe ${codigo} tem mais do que um ${name}`,
+      type: 7,
+      code: 1
+    });
+  }
+}
+
+export function invCritLenDF(criterios, name, codigo, report) {
+  if (criterios.length > 1) {
+    report({
+      msg: `Justificação do DF da classe ${codigo} tem mais do que um ${name}`,
       type: 7,
       code: 1
     });
