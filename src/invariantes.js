@@ -262,11 +262,12 @@ export function invCritDens(relProc, procRel, classe, classes, critCode) {
 /**
  * 6.2) ... -> REPORT
  */
-export function invDfComp(relProc, classe, classes, report) {
+export function invDfComp(relProc, classe, procRel, report) {
   if (
     relProc === "eComplementarDe" &&
     !classe.dfJust.comp &&
-    classe.classe.length === 3
+    classe.classe.length === 3 &&
+    procRel.split(".").length === 3
   ) {
     report({
       msg: `A classe ${classe.codigo} é complementar de outro, mas não tem critério de complementaridade informacional na Justificação do DF`,

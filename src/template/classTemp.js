@@ -19,7 +19,8 @@ import {
   relacoesDf,
   legsCritLegal,
   invSuplementoPara,
-  invSintese
+  invSintese,
+  invDfComp
 } from "../invariantes.js";
 
 export default function template(
@@ -148,6 +149,8 @@ function PrintRelProc(classe, classes, report) {
       invSuplementoPara(relProc, classe, classes, report);
 
       invSintese(relProc, classe, classes, report);
+
+      invDfComp(relProc, classe, classe.codProcRel[index], report);
 
       if (index) prev += "\n";
 
