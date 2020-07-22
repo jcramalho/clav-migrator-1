@@ -42,24 +42,6 @@ export function invDfDistinto(classe, classes, report) {
     };
   }
 
-  // if (
-  //   classe["Destino final"] &&
-  //   classe["Destino final"].trim().replace(/(\r\n|\n|\r)/gm, "") === "C"
-  // )
-  //   return {
-  //     codProcRel: [...irmao.map(item => item.codigo)],
-  //     tipoRelProc: [...irmao.map(() => "Síntese (sintetiza)")]
-  //   };
-
-  // if (
-  //   classe["Destino final"] &&
-  //   classe["Destino final"].trim().replace(/(\r\n|\n|\r)/gm, "") === "E"
-  // )
-  //   return {
-  //     codProcRel: [...irmao.map(item => item.codigo)],
-  //     tipoRelProc: [...irmao.map(() => "Síntese (sintetizado)")]
-  //   };
-
   return {
     codProcRel: [...irmao.map(item => item.codigo)],
     tipoRelProc: [...irmao.map(() => "Síntese (sintetiza)")]
@@ -195,7 +177,7 @@ export function legsCritLegal(critLegal, legList) {
 }
 
 /**
- * 4.1) ... -> REPORT
+ * 4.1) Quando o PN em causa é suplemento para outro, deve ser acrescentado um critério de utilidade administrativa na justificação do respetivo PCA -> REPORT
  */
 export function invSuplementoPara(relProc, classe, classes, report) {
   if (
@@ -212,7 +194,7 @@ export function invSuplementoPara(relProc, classe, classes, report) {
 }
 
 /**
- * 4.2) ... -> CORRIGIDO
+ * 4.2) No critério de utilidade administrativa devem aparecer todos os processos com os quais existe uma relação de suplemento para -> CORRIGIDO
  */
 export function invCritAdmin(relProc, procRel, classe, classes, critCode) {
   if (
@@ -227,7 +209,7 @@ export function invCritAdmin(relProc, procRel, classe, classes, critCode) {
 }
 
 /**
- * 5.3) ... -> REPORT
+ * 5.3) Se um PN tem uma relação de síntese, o seu DF deverá ter uma justificação onde consta um critério de densidade informacional -> REPORT
  */
 export function invSintese(relProc, classe, classes, report) {
   if (
@@ -244,7 +226,7 @@ export function invSintese(relProc, classe, classes, report) {
 }
 
 /**
- * 5.4) ... -> CORRIGIDO
+ * 5.4) Todos os processos relacionados por uma relação de síntese deverão estar relacionados com o critério de densidade informacional da respetiva justificação -> CORRIGIDO
  */
 export function invCritDens(relProc, procRel, classe, classes, critCode) {
   const valor = classe["Destino final"].trim().replace(/(\r\n|\n|\r)/gm, "");
@@ -260,7 +242,7 @@ export function invCritDens(relProc, procRel, classe, classes, critCode) {
 }
 
 /**
- * 6.2) ... -> REPORT
+ * 6.2) Quando o PN em causa é complementar de outro, a justificação do DF deverá conter o critério de complementaridade informacional  -> REPORT
  */
 export function invDfComp(relProc, classe, procRel, report) {
   if (
@@ -278,7 +260,7 @@ export function invDfComp(relProc, classe, procRel, report) {
 }
 
 /**
- * 6.3) ... -> CORRIGIDO
+ * 6.3) Todos os processos relacionados pela relação é complementar de, devem estar relacionados com o critério de complementaridade informacional da respetiva justificação -> CORRIGIDO
  */
 export function invCritComp(relProc, procRel, classe, critCode) {
   if (
@@ -291,7 +273,7 @@ export function invCritComp(relProc, procRel, classe, critCode) {
   return "";
 }
 /**
- * 7.1) ... -> REPORT
+ * 7.1) Um DF, na sua justificação, deverá conter apenas critérios de densidade informacional, complementaridade informacional e legal -> REPORT
  */
 export function invCritLenPCA(criterios, name, codigo, report) {
   if (criterios.length > 1) {
