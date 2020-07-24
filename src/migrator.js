@@ -12,8 +12,8 @@ const migrator = {
     4: { 1: [] },
     5: { 3: [] },
     6: { 2: [] },
-    7: { 1: [] }
-  }
+    7: { 1: [] },
+  },
 };
 
 migrator.read = function read(sheet, name) {
@@ -23,8 +23,8 @@ migrator.read = function read(sheet, name) {
   this.data[readName] = [
     ...this.data[readName],
     ...xlsx.utils.sheet_to_json(sheet, {
-      dateNF: "dd.mm.yyyy"
-    })
+      dateNF: "dd.mm.yyyy",
+    }),
   ];
   this.readName = readName;
   return this;
@@ -86,7 +86,7 @@ migrator.printLog = function printLog(outFile) {
     4: { 1: [] },
     5: { 3: [] },
     6: { 2: [] },
-    7: { 1: [] }
+    7: { 1: [] },
   };
 };
 

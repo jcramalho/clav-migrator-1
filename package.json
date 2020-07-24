@@ -2,7 +2,7 @@
   "name": "clav-migrator",
   "version": "1.0.0",
   "description": "Migrador de Dados",
-  "main": "excel2csv.js",
+  "main": "./lib",
   "type": "module",
   "scripts": {
     "start": "node ./src/index.js",
